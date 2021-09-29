@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            Chess Online
+        </title>
+        <script src="https://kit.fontawesome.com/0afa017979.js" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="/css/styles.css">
+        <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+    </head>
+    <body>
+        <header>
+            <div id="title">
+                CHESS
+            </div>
+            <div id="subtitle-1">
+                FREE ONLINE MULTIPLAYER CHESS
+            </div>
+            <div id="subtitle-2">
+                <div></div>
+                <div id="subtitle-2-link">
+                    <div>
+                        made by 
+                    </div>
+                    <a>
+                        Andrés Aranda
+                    </a>
+                </div>
+            </div>
+        </header>
+        <main>
+            <aside id="sidebar">
+                <div id="user-data">
+                    <br>
+                </div>
+                <div id="quick-game-btn" class="sidebar-highlight">
+                    Quick Game
+                </div>
+                <div id="quick-game-options" class="hidden">
+                    <input id="quick-game-input" type="text" spellcheck="false" placeholder="Enter name...">
+                    <div id="quick-game-input-alert" class="alert"></div>
+                    <button id="quick-game-input-btn" class="btn">
+                        Start
+                    </button>
+                    <button id="quick-game-random-btn" class="btn">
+                        Random name
+                    </button>
+                </div>
+                <!-- <div id="log-in-btn" class="sidebar-highlight">
+                    Log In
+                </div> -->
+                <!-- <div id="new-player-btn" class="sidebar-highlight">
+                    New Player
+                </div> -->
+                <div id="log-out-btn" class="sidebar-highlight hidden">
+                    Log Out
+                </div>
+                <div id="log-out-options" class="hidden">
+                    <button id="log-out-confirm-btn" class="btn">
+                        Confirm Log Out
+                    </button>
+                </div>
+                <!-- <div id="load-game-btn" class="sidebar-highlight">
+                    Load Old Game
+                </div> -->
+                <div id="new-game-btn" class="sidebar-highlight hidden">
+                    New Game
+                </div>
+                <div id="new-game-options" class="hidden">
+                    <button id="new-game-color-white" class="btn">White</button>
+                    <button id="new-game-color-random" class="btn">Random</button>
+                    <button id="new-game-color-black" class="btn">Black</button>
+                </div>
+                <div id="join-game-btn" class="sidebar-highlight hidden">
+                    Join Game
+                </div>
+                <div id="join-game-options" class="hidden">
+                    <input id="join-game-input" type="text" spellcheck="false" placeholder="Friend's username...">
+                    <div id="join-game-input-alert" class="alert"></div>
+                    <button id="join-game-input-btn" class="btn">
+                        Join
+                    </button>
+                </div>
+                <div id="random-opponent-btn" class="sidebar-highlight hidden">
+                    Find Random Opponent
+                </div>
+                <div id="random-opponent-options" class="hidden">
+                    <div id="random-opponent-alert" class="alert"></div>
+                </div>
+            </aside>
+            <div id="board-container">
+                <div id="opponent-info" class="game-info">
+                    <div class="name"></div>
+                    <div class="captured-pieces"></div>
+                </div>
+                <div id="board">
+                    <div class="overlay hidden">
+                        <div id="board-alert-box" class="hidden">
+                            <div class="title">
+                                Welcome!
+                            </div>
+                            <button class="close-btn">&times;</button>
+                            <div class="content">
+                                Press Log-in in left menu to start playing: pick a username or press Random Name for an automated one.
+                            </div>
+                            <button class="join-btn btn hidden">JOIN</button>
+                            <button class="ignore-btn btn hidden">IGNORE</button>
+                            <button class="cancel-btn btn hidden">CANCEL</button>
+                            <button class="confirm-resign-btn btn hidden">RESIGN</button>
+                            <button class="accept-draw-btn btn hidden">ACCEPT DRAW</button>
+                            <button class="deny-draw-btn btn hidden">DENY</button>
+                            <div id="promotion-btns" class="hidden">
+                                <div id="promotion-type-knight-btn"></div>
+                                <div id="promotion-type-bishop-btn"></div>
+                                <div id="promotion-type-rook-btn"></div>
+                                <div id="promotion-type-queen-btn"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="player-info" class="game-info">
+                    <div class="name"></div>
+                    <div class="captured-pieces"></div>
+                </div>
+            </div>
+            <div id="right-container">
+                <div id="move-table">
+                    <div id="move-table-header">
+                        LAST MOVES
+                    </div>
+                    <ol id="move-table-content">
+                        game started...
+                    </ol>
+                </div>
+                <div class="btn-container">
+                    <button id="resign-btn" class="btn">Resign</button>
+                </div>
+                <div class="btn-container">
+                    <button id="draw-btn" class="btn">Draw</button>
+                </div>
+                <!-- <div id="chat-table">
+                    <div id="chat-box"></div>
+                    <div id="chat-input-container">
+                        <input id="chat-input" type="text" placeholder="Enter message...">
+                        <button id="chat-btn">SEND</button>
+                    </div>
+                </div> -->
+            </div>
+        </main>
+        <footer>
+            <div>
+                Free online multiplayer chess
+            </div>
+            <div>
+                Created by Andrés Aranda under an MIT license
+            </div>
+            <div id="foot-grid">
+                <div id="foot-grid-title">
+                    Contact
+                </div>
+                <div class="footer-link">
+                    <div></div>
+                    <div>
+                        aaranda@pucp.edu.pe
+                    </div>
+                </div>
+                <div class="footer-link">
+                    <div></div>
+                    <div>
+                        +51-1-991-099-482
+                    </div>
+                </div>
+                <div class="footer-link">
+                    <div></div>
+                    <div>
+                        linkedIn
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="/js/game-client.js"></script>
+</html>

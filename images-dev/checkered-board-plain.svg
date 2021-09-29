@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100.00348"
+   height="100.00346"
+   viewBox="0 0 9.3383249 9.3383242"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="checkered-board-plain.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="2.4088454"
+     inkscape:cx="23.455221"
+     inkscape:cy="42.13637"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     units="px"
+     width="3035.0627px"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     scale-x="1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-409.43219,-153.11815)">
+    <g
+       id="g12935"
+       transform="matrix(0.03295911,0,0,0.03295911,400.45294,152.58678)">
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="16.122017"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1"
+         width="35.416317"
+         height="35.416317"
+         x="272.43607"
+         y="16.122017"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="16.122019"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-8"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="16.122017"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-3"
+         width="35.416317"
+         height="35.416317"
+         x="484.93402"
+         y="16.122015"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="51.538334"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-9"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="51.538334"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-7"
+         width="35.416317"
+         height="35.416317"
+         x="449.5177"
+         y="51.53833"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-1"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="51.53833"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-0"
+         width="35.416317"
+         height="35.416317"
+         x="272.43607"
+         y="86.954659"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-4"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="86.954659"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-8-8"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="86.954659"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-3-0"
+         width="35.416317"
+         height="35.416317"
+         x="484.93399"
+         y="86.954659"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-8"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="122.37098"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-9-4"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="122.37098"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-7-0"
+         width="35.416317"
+         height="35.416317"
+         x="449.51767"
+         y="122.37097"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-1-7"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="122.37097"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-92"
+         width="35.416317"
+         height="35.416317"
+         x="272.43604"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-6"
+         width="35.416317"
+         height="35.416317"
+         x="343.26868"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-8-3"
+         width="35.416317"
+         height="35.416317"
+         x="414.10132"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-3-2"
+         width="35.416317"
+         height="35.416317"
+         x="484.93399"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-12"
+         width="35.416317"
+         height="35.416317"
+         x="307.85236"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-9-1"
+         width="35.416317"
+         height="35.416317"
+         x="378.685"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-7-8"
+         width="35.416317"
+         height="35.416317"
+         x="449.51767"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-1-4"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-06"
+         width="35.416317"
+         height="35.416317"
+         x="272.43607"
+         y="228.61995"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-49"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="228.61996"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-8-0"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="228.61995"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-3-3"
+         width="35.416317"
+         height="35.416317"
+         x="484.93402"
+         y="228.61995"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-95"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="264.03629"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-9-8"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="264.03629"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-7-2"
+         width="35.416317"
+         height="35.416317"
+         x="449.5177"
+         y="264.03625"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.84739;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-1-9-9-1-9"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="264.03625"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="16.122017"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-3"
+         width="35.416317"
+         height="35.416317"
+         x="449.51767"
+         y="16.122015"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-7"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="16.122015"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-3"
+         width="35.416317"
+         height="35.416317"
+         x="272.43607"
+         y="51.538334"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-3"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="51.538338"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-4-0"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="51.538334"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-6-9"
+         width="35.416317"
+         height="35.416317"
+         x="484.93399"
+         y="51.538334"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-6"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="86.954651"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-1"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="86.954651"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-3-3"
+         width="35.416317"
+         height="35.416317"
+         x="449.51767"
+         y="86.954651"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-7-7"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="86.954651"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-3-1"
+         width="35.416317"
+         height="35.416317"
+         x="272.43604"
+         y="122.37097"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-3-9"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="122.37097"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-4-0-3"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="122.37097"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-6-9-2"
+         width="35.416317"
+         height="35.416317"
+         x="484.93399"
+         y="122.37097"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-0"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-4"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-3-33"
+         width="35.416317"
+         height="35.416317"
+         x="449.51767"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-7-09"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="157.78729"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-3-0"
+         width="35.416317"
+         height="35.416317"
+         x="272.43607"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-3-4"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-4-0-0"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-6-9-6"
+         width="35.416317"
+         height="35.416317"
+         x="484.93399"
+         y="193.20361"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-6-6"
+         width="35.416317"
+         height="35.416317"
+         x="307.85239"
+         y="228.61993"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-1-4"
+         width="35.416317"
+         height="35.416317"
+         x="378.68503"
+         y="228.61993"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-3-3-3"
+         width="35.416317"
+         height="35.416317"
+         x="449.51767"
+         y="228.61993"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-5-7-7-0"
+         width="35.416317"
+         height="35.416317"
+         x="520.35034"
+         y="228.61993"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-3-1-0"
+         width="35.416317"
+         height="35.416317"
+         x="272.43604"
+         y="264.03625"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-3-9-1"
+         width="35.416317"
+         height="35.416317"
+         x="343.26871"
+         y="264.03625"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-4-0-3-3"
+         width="35.416317"
+         height="35.416317"
+         x="414.10135"
+         y="264.03625"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+      <rect
+         style="fill:#727272;fill-opacity:0.633064;fill-rule:evenodd;stroke-width:1.01521"
+         id="rect77-0-2-6-9-2-9"
+         width="35.416317"
+         height="35.416317"
+         x="484.93399"
+         y="264.03625"
+         inkscape:export-filename="C:\Users\ANDRES\Documents\Javascript\chess-online\view\images\checkered-board-transparent1.png"
+         inkscape:export-xdpi="107.57749"
+         inkscape:export-ydpi="107.57749" />
+    </g>
+  </g>
+</svg>
