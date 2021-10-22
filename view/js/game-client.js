@@ -1,13 +1,12 @@
+// comment front-end
+// modulate and comment back-end
+// schema
 
 const socket = io();
 
-let requesting_opponent_g
-let player_color_g
-
-// syntactic sugar
-function addClassToElement(element, class_name){
-    element.classList.add(class_name)
-}
+let requesting_opponent_g = null
+let player_color_g = null
+let move_counter_g = 1
 
 // syntactic sugar
 function getElement(selectors){
@@ -26,6 +25,8 @@ const opponent_name = getElement('#opponent-info .name')
 const player_name = getElement('#player-info .name')
 let opponent_captured_pieces = getElement('#opponent-info .captured-pieces')
 let player_captured_pieces = getElement('#player-info .captured-pieces')
+const move_table = getElement('#move-table')
+let move_table_content = getElement('.move-table-content')
 const board_overlay = getElement('.overlay')
 const board_alert = getElement('#board-alert-box')
 const board_alert_title = getElement('#board-alert-box .title')
@@ -42,7 +43,7 @@ const promotion_type_knight_btn = getElement('#promotion-type-knight-btn')
 const promotion_type_bishop_btn = getElement('#promotion-type-bishop-btn')
 const promotion_type_rook_btn = getElement('#promotion-type-rook-btn')
 const promotion_type_queen_btn = getElement('#promotion-type-queen-btn')
-const user_data = getElement('#user-data')
+const user_data = getElement('.user-data')
 const quick_game_btn = getElement('#quick-game-btn')
 const quick_game_options = getElement('#quick-game-options')
 const quick_game_input = getElement('#quick-game-input')
@@ -64,10 +65,20 @@ const random_opponent_options = getElement('#random-opponent-options')
 const random_opponent_alert = getElement('#random-opponent-alert')
 const resign_btn = getElement('#resign-btn')
 const draw_btn = getElement('#draw-btn')
+const slide_from_left = document.querySelectorAll('.slide-left')
+const slide_from_right = document.querySelectorAll('.slide-right')
 
 const logged_out_elements = [quick_game_btn]
 const logged_in_elements = [log_out_btn, new_game_btn, join_game_btn, random_opponent_btn]
-const sidebar_toggle_elements = [quick_game_options, new_game_options, join_game_options, log_out_options, random_opponent_options]
+const sidebar_toggle_elements = [quick_game_options, new_game_options, join_game_options, log_out_options, random_opponent_options, quick_game_input_alert, join_game_input_alert]
+
+
+
+
+// SLIDE IN OF ELEMENTS FROM SIDES:
+
+slide_from_left.forEach((element) => {element.classList.add('appear')})
+slide_from_right.forEach((element) => {element.classList.add('appear')})
 
 
 
@@ -103,6 +114,12 @@ function hideAllToggleElementsExceptEspecified(elem_kept){
     }
 }
 
+function hideAllToggleElements(){
+    for (let elem of sidebar_toggle_elements){
+        elem.classList.add('hidden')
+    }
+}
+
 function updateLeftSidebarToLogIn(username){
     user_data.textContent = username
     toggleHideOrShow(quick_game_options)
@@ -122,6 +139,11 @@ quick_game_btn.addEventListener('click', () => {
     hideAllToggleElementsExceptEspecified(quick_game_options)
 })
 
+log_out_btn.addEventListener('click', () => {
+    toggleHideOrShow(log_out_options)
+    hideAllToggleElementsExceptEspecified(log_out_options)
+})
+
 new_game_btn.addEventListener('click', () => {
     toggleHideOrShow(new_game_options)
     hideAllToggleElementsExceptEspecified(new_game_options)
@@ -130,11 +152,6 @@ new_game_btn.addEventListener('click', () => {
 join_game_btn.addEventListener('click', () => {
     toggleHideOrShow(join_game_options)
     hideAllToggleElementsExceptEspecified(join_game_options)
-})
-
-log_out_btn.addEventListener('click', () => {
-    toggleHideOrShow(log_out_options)
-    hideAllToggleElementsExceptEspecified(log_out_options)
 })
 
 
@@ -164,6 +181,8 @@ function openBoardAlertPopup(title, content, special_btns = null){
         board_alert_accept_draw_btn.classList.remove('hidden')
         board_alert_deny_draw_btn.classList.remove('hidden')
     }
+
+    board_element.scrollIntoView(false)
 }
 
 function closeBoardAlertPopup(){
@@ -227,7 +246,7 @@ function createPieceElement(piece, x, y, player_color){
 
     piece_elem.id = piece.id
     addImageSourceToPieceElement(piece_elem, piece.color, piece.type)
-    addClassToElement(piece_elem, 'piece')
+    piece_elem.classList.add('piece')
     positionElementOnBoard(piece_elem, x, y, player_color)
 
     return piece_elem
@@ -235,7 +254,7 @@ function createPieceElement(piece, x, y, player_color){
 
 function createBoard(board, player_color){
     const piece_container = document.createElement('div')
-    addClassToElement(piece_container, 'board-piece-container')
+    piece_container.classList.add('board-piece-container')
     board_element.appendChild(piece_container)
 
     for (let y = 0; y < 8; y++){
@@ -269,19 +288,24 @@ function deletePiecesFromBoard(){
     removeElement('.board-piece-container')
 }
 
-function recreateCapturedPiecesContainer(captured_element, parent_element){
-    captured_element.remove()
+function recreateDivElement(element_to_delete, element_class, parent_element){
+    parent_element.removeChild(element_to_delete)
 
-    const new_captured_element = document.createElement('div')
-    addClassToElement(new_captured_element, 'captured-pieces')
-    parent_element.appendChild(new_captured_element)
-
-    captured_element = new_captured_element
+    const new_element = document.createElement('div')
+    new_element.classList.add(element_class)
+    parent_element.appendChild(new_element)
 }
 
 function deletePiecesFromCapturedPiecesContainers(){
-    recreateCapturedPiecesContainer(opponent_captured_pieces, opponent_info)
-    recreateCapturedPiecesContainer(player_captured_pieces, player_info)
+    recreateDivElement(opponent_captured_pieces, 'captured-pieces', opponent_info)
+    recreateDivElement(player_captured_pieces, 'captured-pieces', player_info)
+    opponent_captured_pieces = getElement('#opponent-info .captured-pieces')
+    player_captured_pieces = getElement('#player-info .captured-pieces')
+}
+
+function deleteLastMovesFromTable(){
+    recreateDivElement(move_table_content, 'move-table-content', move_table)
+    move_table_content = getElement('.move-table-content')
 }
 
 // clear all game data on front end
@@ -289,6 +313,9 @@ function clearGameData(){
     deactivateBoard()
     deletePiecesFromBoard()
     deletePiecesFromCapturedPiecesContainers()
+    deleteLastMovesFromTable()
+    opponent_name.textContent = ""
+    opponent_info.classList.add('hidden')
 }
 
 
@@ -315,6 +342,7 @@ quick_game_random_btn.addEventListener('click', () => {
 socket.on('logInSuccessful', (username) => { // temporarily on playerCreated
     updateLeftSidebarToLogIn(username)
     player_name.textContent = username
+    player_info.classList.remove('hidden')
 
     const title = `Successfully logged in as: ${username}!`
     const text = "To begin playing, create a New Game, Join a friends Game or Find a Random Opponent in the menu to the left."
@@ -331,6 +359,9 @@ log_out_confirm_btn.addEventListener('click', () => {
 
 socket.on('logOutSuccessful', () => { // temporarily on playerDeleted
     updateLeftSidebarToLogOut()
+    clearGameData()
+    player_name.textContent = ""
+    player_info.classList.add('hidden')
 
     const title = "Successfully logged out."
     const text = "To play again, press Log-in in the left menu: pick a username or press Random Name for an automated one."
@@ -355,6 +386,7 @@ socket.on('newGameCreated', ([board, player_color]) => {
     const title = "New game created!"
     const text = "Ask a friend to Join your game by using your Username or click on 'Find Random Opponent' to be matched with a random player."
     openBoardAlertPopup(title, text)
+    hideAllToggleElements()
 })
 
 join_game_input_btn.addEventListener('click', () => {
@@ -410,7 +442,9 @@ socket.on('newGameJoined', ([board, player_color]) => {
 // gets sent to both players
 socket.on('joinGameSuccessful', (opponent_username) => {
     opponent_name.textContent = opponent_username
+    opponent_info.classList.remove('hidden')
     socket.emit('cacheOpponentAndGame')
+    hideAllToggleElements()
 })
 
 socket.on('joinGameError', (error) => {
@@ -436,7 +470,7 @@ function cancelCurrentGame(){
 socket.on('clearCache', () => {
     player_color_g = null
     requesting_opponent_g = null
-    opponent_name.textContent = ""
+    move_counter_g = 1
     socket.emit('clearCacheOfOpponentAndGame')
 })
 
@@ -467,12 +501,19 @@ resign_btn.addEventListener('click', () => {
 
 board_alert_confirm_resign_btn.addEventListener('click', () => {
     socket.emit('resign')
+    cancelCurrentGame()
     closeBoardAlertPopup()
+
+    const score = (player_color_g === 'white') ? '0-1' : '1-0'
+    createNewMoveTableItem(score)
 })
 
 socket.on('opponentResigned', () => {
     const title = "Game won!!! Opponent resigned!"
     openBoardAlertPopupForFinishedGame(title)
+
+    const score = (player_color_g === 'white') ? '1-0' : '0-1'
+    createNewMoveTableItem(score)
 })
 
 draw_btn.addEventListener('click', () => {
@@ -498,6 +539,8 @@ board_alert_deny_draw_btn.addEventListener('click', () => {
 socket.on('gameDrawn', () => {
     const title = "Draw by mutual agreement!"
     openBoardAlertPopupForFinishedGame(title)
+
+    createNewMoveTableItem('½–½')
 })
 
 socket.on('informDeniedDrawRequest', () => {
@@ -519,31 +562,49 @@ function openBoardAlertPopupForFinishedGame(title){
 socket.on('gameCancelledByOpponent', () => {
     const title = "Game cancelled by opponent :("
     openBoardAlertPopupForFinishedGame(title)
+
+    const score = (player_color_g === 'white') ? '1-0' : '0-1'
+    createNewMoveTableItem(score)
 })
 
 socket.on('opponentLoggedOut', () => {
     const title = "Opponent Logged Out :("
     openBoardAlertPopupForFinishedGame(title)
+
+    const score = (player_color_g === 'white') ? '1-0' : '0-1'
+    createNewMoveTableItem(score)
 })
 
 socket.on('gameOverByCheckmateWon', () => {
     const title = "Game won by checkmate!!!"
     openBoardAlertPopupForFinishedGame(title)
+    
+    createNewMoveTableItem('#')
+    const score = (player_color_g === 'white') ? '1-0' : '0-1'
+    createNewMoveTableItem(score)
 })
 
 socket.on('gameOverByCheckmateLost', () => {
     const title = "Game Over, lost by checkmate :("
     openBoardAlertPopupForFinishedGame(title)
+
+    createNewMoveTableItem('#')
+    const score = (player_color_g === 'white') ? '0-1' : '1-0'
+    createNewMoveTableItem(score)
 })
 
 socket.on('gameOverByStalemate', () => {
     const title = "Draw by stalemate"
     openBoardAlertPopupForFinishedGame(title)
+
+    createNewMoveTableItem('½–½')
 })
 
 socket.on('gameOverByDeadPosition', () => {
     const title = "Draw by dead position"
     openBoardAlertPopupForFinishedGame(title)
+
+    createNewMoveTableItem('½–½')
 })
 
 
@@ -587,7 +648,7 @@ function getHighlightedCellDiv(cell, highlight_class, player_color){
     const [y, x] = cell
     const highlighted_cell = document.createElement('div')
 
-    addClassToElement(highlighted_cell, highlight_class)
+    highlighted_cell.classList.add(highlight_class)
     positionElementOnBoard(highlighted_cell, x, y, player_color)
 
     return highlighted_cell
@@ -595,7 +656,7 @@ function getHighlightedCellDiv(cell, highlight_class, player_color){
 
 socket.on('activateBoard', ([new_active_moves, new_last_selected_cell, player_color]) => {
     const highlight_container = document.createElement('div')
-    addClassToElement(highlight_container, 'board-highlight-container')
+    highlight_container.classList.add('board-highlight-container')
     board_element.appendChild(highlight_container)
     
     for (let new_move of new_active_moves){
@@ -642,14 +703,90 @@ function removeCapturedPieceFromBoard(captured_piece, player_color){
     }
 }
 
+const piece_names = {
+    king: 'K',
+    queen: 'Q',
+    rook: 'R',
+    bishop: 'B',
+    knight: 'N',
+    pawn: ''
+}
+const board_files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+const board_ranks = (cell_y) => {return String(8 - cell_y)}
+
+function getMoveInNotation(new_play){
+
+    if (new_play.castling !== null){
+        const castling_move_in_notation = (new_play.castling.side === 'left') ? '0-0-0' : '0-0'
+        return castling_move_in_notation
+    }
+
+    let move_in_notation = ''
+    move_in_notation += piece_names[new_play.initial.piece.type]
+    move_in_notation += board_files[new_play.initial.cell[1]]
+    move_in_notation += board_ranks(new_play.initial.cell[0])
+
+    if (new_play.target.piece === null){
+        move_in_notation += '-'
+    } else {
+        move_in_notation += 'x'
+    }
+
+    move_in_notation += board_files[new_play.target.cell[1]]
+    move_in_notation += board_ranks(new_play.target.cell[0])
+
+    if (new_play.en_passant_capture !== null){
+        move_in_notation += ' e.p.'
+    }
+
+    return move_in_notation
+}
+
+function createNewMoveTableItem(move_table_item_text){
+    let new_move_table_item_text = ''
+    new_move_table_item_text += String(move_counter_g)
+    new_move_table_item_text += '.    '
+    new_move_table_item_text += move_table_item_text
+    move_counter_g += 1
+
+    const new_move_table_item = document.createElement('div')
+    new_move_table_item.classList.add('move-table-item')
+    new_move_table_item.textContent = new_move_table_item_text
+    move_table_content.appendChild(new_move_table_item)
+
+    new_move_table_item.scrollIntoView(false)
+}
+
+function appendTextToLastNewMoveTableItem(move_table_item_text){
+    const all_items = document.querySelectorAll('.move-table-item')
+    const last_move_table_item = all_items[all_items.length-1]
+
+    let last_move_table_item_text = last_move_table_item.textContent
+    last_move_table_item_text += move_table_item_text
+    last_move_table_item.textContent = last_move_table_item_text
+
+    last_move_table_item.scrollIntoView(false)
+}
+
+function updateLastMoves(new_play){
+    const move_table_item_text = getMoveInNotation(new_play)
+    if (new_play.initial.piece.color === 'white'){
+        createNewMoveTableItem(move_table_item_text)
+    } else {
+        appendTextToLastNewMoveTableItem('    ')
+        appendTextToLastNewMoveTableItem(move_table_item_text)
+    }
+}
+
 socket.on('movePiece', ([new_play, player_color]) => {
     const moved_piece = new_play.initial.piece
     const target_cell = new_play.target.cell
     const captured_piece = new_play.target.piece
-    console.log(new_play)
 
     const moved_piece_elem = getPieceElement(moved_piece)
     positionElementOnBoard(moved_piece_elem, target_cell[1], target_cell[0], player_color)
+
+    updateLastMoves(new_play)
 
     if (captured_piece){
         removeCapturedPieceFromBoard(captured_piece, player_color)
@@ -684,4 +821,7 @@ socket.on('promotePawn', ([unpromoted_pawn, promoted_pawn]) => {
     const pawn_element = getPieceElement(unpromoted_pawn)
     pawn_element.id = promoted_pawn.id
     addImageSourceToPieceElement(pawn_element, promoted_pawn.color, promoted_pawn.type)
+
+    const pawnPromotionTypeNotation = piece_names[promoted_pawn.type]
+    appendTextToLastNewMoveTableItem(pawnPromotionTypeNotation)
 })

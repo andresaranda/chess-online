@@ -14,35 +14,34 @@
     </head>
     <body>
         <header>
-            <div id="title">
-                CHESS
+            <div class="slide-left">
+                <h1 id="title">
+                    CHESS
+                </h1>
+                <h3 id="subtitle">
+                    FREE ONLINE MULTIPLAYER CHESS
+                </h3>
             </div>
-            <div id="subtitle-1">
-                FREE ONLINE MULTIPLAYER CHESS
-            </div>
-            <div id="subtitle-2">
-                <div></div>
-                <div id="subtitle-2-link">
-                    <div>
-                        made by 
-                    </div>
-                    <a>
-                        Andrés Aranda
-                    </a>
+            <a id="contact-note" class="slide-right" href="https://github.com/andresaranda" target="_blank" rel="noreferrer noopener">
+                <div>
+                    made by 
                 </div>
-            </div>
+                <div>
+                    Andrés Aranda
+                </div>
+            </a>
         </header>
         <main>
-            <aside id="sidebar">
-                <div id="user-data">
+            <aside id="sidebar" class="slide-left">
+                <div class="user-data">
                     <br>
                 </div>
                 <div id="quick-game-btn" class="sidebar-highlight">
                     Quick Game
                 </div>
-                <div id="quick-game-options" class="hidden">
+                <div id="quick-game-options" class="hidden options">
                     <input id="quick-game-input" type="text" spellcheck="false" placeholder="Enter name...">
-                    <div id="quick-game-input-alert" class="alert"></div>
+                    <div id="quick-game-input-alert" class="alert hidden"></div>
                     <button id="quick-game-input-btn" class="btn">
                         Start
                     </button>
@@ -59,7 +58,7 @@
                 <div id="log-out-btn" class="sidebar-highlight hidden">
                     Log Out
                 </div>
-                <div id="log-out-options" class="hidden">
+                <div id="log-out-options" class="hidden options">
                     <button id="log-out-confirm-btn" class="btn">
                         Confirm Log Out
                     </button>
@@ -70,7 +69,7 @@
                 <div id="new-game-btn" class="sidebar-highlight hidden">
                     New Game
                 </div>
-                <div id="new-game-options" class="hidden">
+                <div id="new-game-options" class="hidden options">
                     <button id="new-game-color-white" class="btn">White</button>
                     <button id="new-game-color-random" class="btn">Random</button>
                     <button id="new-game-color-black" class="btn">Black</button>
@@ -78,9 +77,9 @@
                 <div id="join-game-btn" class="sidebar-highlight hidden">
                     Join Game
                 </div>
-                <div id="join-game-options" class="hidden">
+                <div id="join-game-options" class="hidden options">
                     <input id="join-game-input" type="text" spellcheck="false" placeholder="Friend's username...">
-                    <div id="join-game-input-alert" class="alert"></div>
+                    <div id="join-game-input-alert" class="alert hidden"></div>
                     <button id="join-game-input-btn" class="btn">
                         Join
                     </button>
@@ -88,12 +87,12 @@
                 <div id="random-opponent-btn" class="sidebar-highlight hidden">
                     Find Random Opponent
                 </div>
-                <div id="random-opponent-options" class="hidden">
+                <div id="random-opponent-options" class="hidden options">
                     <div id="random-opponent-alert" class="alert"></div>
                 </div>
             </aside>
-            <div id="board-container">
-                <div id="opponent-info" class="game-info">
+            <div id="board-container"  class="slide-left">
+                <div id="opponent-info" class="game-info hidden">
                     <div class="name"></div>
                     <div class="captured-pieces"></div>
                 </div>
@@ -109,7 +108,7 @@
                             </div>
                             <button class="join-btn btn hidden">JOIN</button>
                             <button class="ignore-btn btn hidden">IGNORE</button>
-                            <button class="cancel-btn btn hidden">CANCEL</button>
+                            <button class="cancel-btn btn hidden">CANCEL GAME</button>
                             <button class="confirm-resign-btn btn hidden">RESIGN</button>
                             <button class="accept-draw-btn btn hidden">ACCEPT DRAW</button>
                             <button class="deny-draw-btn btn hidden">DENY</button>
@@ -122,19 +121,17 @@
                         </div>
                     </div>
                 </div>
-                <div id="player-info" class="game-info">
+                <div id="player-info" class="game-info hidden">
                     <div class="name"></div>
                     <div class="captured-pieces"></div>
                 </div>
             </div>
-            <div id="right-container">
+            <div id="right-container"  class="slide-right">
                 <div id="move-table">
-                    <div id="move-table-header">
+                    <div class="table-header">
                         LAST MOVES
                     </div>
-                    <ol id="move-table-content">
-                        game started...
-                    </ol>
+                    <div class="move-table-content"></div>
                 </div>
                 <div class="btn-container">
                     <button id="resign-btn" class="btn">Resign</button>
@@ -159,27 +156,33 @@
                 Created by Andrés Aranda under an MIT license
             </div>
             <div id="foot-grid">
-                <div id="foot-grid-title">
-                    Contact
+                <div class="foot-grid-title">
+                    Contact information:
                 </div>
-                <div class="footer-link">
-                    <div></div>
+                <a class="footer-link" href="mailto:aaranda@pucp.edu.pe" target="_blank" rel="noreferrer noopener">
+                    <div>
+                        <i class="far fa-envelope foot-icon"></i>
+                    </div>
                     <div>
                         aaranda@pucp.edu.pe
                     </div>
-                </div>
-                <div class="footer-link">
-                    <div></div>
+                </a>
+                <a class="footer-link" href="tel:+51-991-099-482" target="_blank" rel="noreferrer noopener">
                     <div>
-                        +51-1-991-099-482
+                        <i class="fas fa-phone-alt foot-icon"></i>
                     </div>
-                </div>
-                <div class="footer-link">
-                    <div></div>
                     <div>
-                        linkedIn
+                        +51-991-099-482
                     </div>
-                </div>
+                </a>
+                <a class="footer-link" href="https://github.com/andresaranda" target="_blank" rel="noreferrer noopener">
+                    <div>
+                        <i class="fab fa-github-alt foot-icon"></i>
+                    </div>
+                    <div>
+                        github/andresaranda
+                    </div>
+                </a>
             </div>
         </footer>
     </body>
