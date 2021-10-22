@@ -251,7 +251,6 @@ io.on('connection', socket => {
             } else if (action === 'updateMove'){
                 const { new_play, new_board } = instruction.params
                 games_db.updateGameMove(game_g.id, player_g.active_color, new_play, new_board)
-                console.log(new_board)
 
             } else if (action === 'activateBoard'){
                 const { new_active_moves, new_last_selected_cell } = instruction.params

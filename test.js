@@ -1,4 +1,5 @@
-const active_players_1 = {}
+
+/* const active_players_1 = {}
 const active_players_2 = {12345:{a:3, b:4}}
 function generateRandomId(){
     let number
@@ -8,7 +9,7 @@ function generateRandomId(){
 
     return number
 }
-console.log(generateRandomId())
+console.log(generateRandomId()) */
 
 /* const games = require('./utils/games')
 games.createGame(12345)

@@ -207,7 +207,7 @@ function getCellsSurroundingEnemyKingIfItIsIn5x5RangeOfPlayerCell(cell, board, p
     const enemy_king_cell_in_range = getEnemyKingCellIfItIsIn5x5RangeOfPlayerCell(cell, board, player_color)
     const threatened_cells = []
     if (enemy_king_cell_in_range){
-        const [cell_y, cell_x] = cell
+        const [cell_y, cell_x] = enemy_king_cell_in_range
         for (let x of [-1, 0, 1]){
             for (let y of [-1, 0, 1]){
                 const target_cell = [cell_y + y, cell_x + x]
@@ -220,18 +220,25 @@ function getCellsSurroundingEnemyKingIfItIsIn5x5RangeOfPlayerCell(cell, board, p
     return threatened_cells
 }
 
+function isPossibleMoveCellInListOfThreatendCells(possible_move, threatened_cells){
+    const [y_possible, x_possible] = possible_move.cell
+    for (let threatened_cell of threatened_cells){
+        const [y_threat, x_threat] = threatened_cell
+        if ((y_possible === y_threat) && (x_possible === x_threat)){
+            return true
+        }
+    }
+    return false
+}
+
 function filterPossibleMovesToStayAwayFromOtherPlayersKing(cell, board, player_color, possible_moves){
     const threatened_cells = getCellsSurroundingEnemyKingIfItIsIn5x5RangeOfPlayerCell(cell, board, player_color)
     let filtered_moves = []
 
     if ((threatened_cells.length > 0) && (possible_moves.length > 0)){
         for (let possible_move of possible_moves){
-            for (let threatened_cell of threatened_cells){
-                const [yp, xp] = possible_move.cell
-                const [yt, xt] = threatened_cell
-                if ((yp !== yt) || (xp !== xt)){
-                    filtered_moves.push(possible_move)
-                }
+            if (isPossibleMoveCellInListOfThreatendCells(possible_move, threatened_cells) === false){
+                filtered_moves.push(possible_move)
             }
         }
     } else {
