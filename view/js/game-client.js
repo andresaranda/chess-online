@@ -1,4 +1,4 @@
-// comment front-end
+// modulate and comment front-end
 // modulate and comment back-end
 // schema
 
@@ -234,8 +234,8 @@ function addImageSourceToPieceElement(piece_elem, piece_color, piece_type){
     piece_elem.src = `../images/pieces/${piece_color}-${piece_type}.png`
 }
 
-function positionElementOnBoard(element, x_postion, y_position, player_color){
-    const x_pos = x_postion * 12.5
+function positionElementOnBoard(element, x_position, y_position, player_color){
+    const x_pos = (player_color === 'white') ? (x_position * 12.5) : ((7 - x_position) * 12.5)
     const y_pos = (player_color === 'white') ? (y_position * 12.5) : ((7 - y_position) * 12.5)
     element.style.left = `${x_pos}%`
     element.style.top = `${y_pos}%`
@@ -256,6 +256,8 @@ function createBoard(board, player_color){
     const piece_container = document.createElement('div')
     piece_container.classList.add('board-piece-container')
     board_element.appendChild(piece_container)
+
+    board_element.style.backgroundImage = `url(../images/checkered-board-${player_color}.svg)`
 
     for (let y = 0; y < 8; y++){
         for (let x = 0; x < 8; x++){
@@ -314,6 +316,7 @@ function clearGameData(){
     deletePiecesFromBoard()
     deletePiecesFromCapturedPiecesContainers()
     deleteLastMovesFromTable()
+    board_element.style.backgroundImage = 'url(../images/checkered-board.svg)'
     opponent_name.textContent = ""
     opponent_info.classList.add('hidden')
 }
@@ -637,7 +640,7 @@ board_element.addEventListener('click', (event) => {
     let selected_cell
     if (clicked_element.classList.contains('piece') || clicked_element.classList.contains('highlighted-cell')){
         const [y, x] = getPositionFromElement(clicked_element)
-        selected_cell = (player_color_g === 'white') ? [y, x] : [(7 - y), x]
+        selected_cell = (player_color_g === 'white') ? [y, x] : [(7 - y), (7 - x)]
     } else {
         selected_cell = null
     }
