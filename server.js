@@ -5,7 +5,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const players_db = require('./utils/players')
 const games_db = require('./utils/games');
-const game_engine = require('./game-engine')
+const game_engine = require('./game-server/game-engine')
 
 const app = express();
 const server = http.createServer(app);

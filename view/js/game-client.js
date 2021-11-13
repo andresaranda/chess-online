@@ -1,5 +1,5 @@
 // modulate and comment front-end
-// modulate and comment back-end
+// comment back-end
 // schema
 
 const socket = io();
