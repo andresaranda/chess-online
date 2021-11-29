@@ -1,6 +1,5 @@
 // modulate and comment front-end
 // comment back-end
-// schema
 
 const socket = io();
 
@@ -17,6 +16,8 @@ function generateRandomColor(){
     const color = (Math.random() < 0.5) ? 'white' : 'black'
     return color
 }
+
+socket.on('consoleLogError', (error) => { console.log(error) })
 
 const board_element = getElement('#board')
 const opponent_info = getElement('#opponent-info')
@@ -228,6 +229,16 @@ function closeRandomOpponentAlert(){
 
 
 
+// INPUT VALIDATION FUNCTIONS:
+
+function validateUsername(username){
+    const str_username = String(username)
+    return (str_username.match(/^[A-Za-z][A-Za-z0-9_]{5,17}$/)) ? true : false
+}
+
+
+
+
 // BOARD CREATION FUNCTIONS:
 
 function addImageSourceToPieceElement(piece_elem, piece_color, piece_type){
@@ -328,13 +339,12 @@ function clearGameData(){
 
 quick_game_input_btn.addEventListener('click', () => {
     const proposed_username = quick_game_input.value
-    const name_length = proposed_username.length
 
-    if (name_length < 6 || name_length > 18){
-        openQuickGameAlert("Please choose a username between 6 and 18 characters long, or click on random")
-    } else {
+    if (validateUsername(proposed_username)){
         closeQuickGameAlert()
         socket.emit('createPlayer', proposed_username)
+    } else {
+        openQuickGameAlert("Please choose a username (only letters, numbers and underscores) between 6 and 18 characters long, or click on random")
     }
 })
 
@@ -394,13 +404,12 @@ socket.on('newGameCreated', ([board, player_color]) => {
 
 join_game_input_btn.addEventListener('click', () => {
     const opponents_username = join_game_input.value
-    const name_length = opponents_username.length
     
-    if (name_length < 6 || name_length > 18){
-        openJoinGameAlert("Please place a username between 6 and 18 characters long")
-    } else {
+    if (validateUsername(opponents_username)){
         openJoinGameAlert("Waiting for player to respond...")
         socket.emit('joinGame', opponents_username) // server also has socket.id
+    } else {
+        openJoinGameAlert("Please place a valid username between 6 and 18 characters long")
     }
 })
 
@@ -757,7 +766,7 @@ function createNewMoveTableItem(move_table_item_text){
     new_move_table_item.textContent = new_move_table_item_text
     move_table_content.appendChild(new_move_table_item)
 
-    new_move_table_item.scrollIntoView(false)
+    // new_move_table_item.scrollIntoView(false)
 }
 
 function appendTextToLastNewMoveTableItem(move_table_item_text){
@@ -768,7 +777,7 @@ function appendTextToLastNewMoveTableItem(move_table_item_text){
     last_move_table_item_text += move_table_item_text
     last_move_table_item.textContent = last_move_table_item_text
 
-    last_move_table_item.scrollIntoView(false)
+    // last_move_table_item.scrollIntoView(false)
 }
 
 function updateLastMoves(new_play){
