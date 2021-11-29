@@ -23,6 +23,47 @@ io.on('connection', socket => {
     let opponent_g = null
     let game_g = null
 
+    function validatedStringData(data, regex){
+        const string = String(data)
+        if (string && string.match(regex)){
+            return string
+        } else {
+            return false
+        }
+    }
+
+    function validatedUsername(username){
+        const regex = /^[A-Za-z][A-Za-z0-9_]{5,17}$/
+        return validatedStringData(username, regex)
+    }
+
+    function validatedColor(color){
+        const regex = /^(white|black|random)$/
+        return validatedStringData(color, regex)
+    }
+
+    function validatedPromotionType(type){
+        const regex = /^(queen|rook|bishop|knight)$/
+        return validatedStringData(type, regex)
+    }
+
+    function validatedCell(cell){
+        if (cell === null){
+            return null
+        } else if (Array.isArray(cell) && (cell.length === 2)){
+            const y = parseInt(cell[0])
+            const x = parseInt(cell[1])
+            const regex = /^[0-7]$/
+            if (String(y).match(regex) && String(x).match(regex)){
+                return [y, x]
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }
+    }
+
     function stopGame(message_event){
         if (game_g){
             games_db.deleteGame(game_g.id)
@@ -49,11 +90,16 @@ io.on('connection', socket => {
     }
 
     socket.on('createPlayer', (username) => {
-        // check username with schema
+        const validated_username = validatedUsername(username)
+        if (validated_username === false){
+            const error = "Error creating player: username may only contain letters, numbers and underscores, start with a letter, and be 6 to 18 characters long"
+            socket.emit('consoleLogError', error)
+            return
+        }
 
-        const is_username_available = players_db.isUsernameAvailable(username)
+        const is_username_available = players_db.isUsernameAvailable(validated_username)
         if (is_username_available){
-            players_db.createPlayer(username, "", socket.id)
+            players_db.createPlayer(validated_username, "", socket.id)
             const player_id = players_db.getPlayerIdFromSocketId(socket.id)
             player_g = players_db.getPlayer(player_id)
             socket.emit('logInSuccessful', player_g.username) // temporary, should be playerCreationSuccessful
@@ -77,7 +123,13 @@ io.on('connection', socket => {
     })
 
     socket.on('createGame', (color) => {
-        // check color with schema
+        const validated_color = validatedColor(color)
+        if (validated_color === false){
+            const error = "Error creating game: color may only be white, black or random"
+            socket.emit('consoleLogError', error)
+            return
+        }
+        
         if (!player_g){
             return
         }
@@ -87,36 +139,42 @@ io.on('connection', socket => {
         } else {
             games_db.createGame(player_g.id)
             game_g = games_db.getGame(player_g.id)
-            players_db.linkPlayerToGame(player_g.id, game_g.id, color)
+            players_db.linkPlayerToGame(player_g.id, game_g.id, validated_color)
             players_db.removeAwaitingPlayerIfIsCurrentPlayer(player_g.id)
 
-            socket.emit('newGameCreated', [game_g.board, color])
+            socket.emit('newGameCreated', [game_g.board, validated_color])
         }
     })
 
     socket.on('joinGame', (opponent_username) => {
-        // check username with schema
+        const validated_opponent_username = validatedUsername(opponent_username)
+        if (validated_opponent_username === false){
+            const error = "Error joining game: username may only contain letters, numbers and underscores, start with a letter, and be 6 to 18 characters long"
+            socket.emit('consoleLogError', error)
+            return
+        }
+        
         if (!player_g){
             return
         }
 
-        const possible_opponent_id = players_db.getPlayerIdFromUsername(opponent_username)
+        const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
         if (possible_opponent_id === null){
-            const error = `Username '${opponent_username}' does not exist, please provide a different one`
+            const error = `Username '${validated_opponent_username}' does not exist, please provide a different one`
             socket.emit('joinGameError', error)
 
         } else {
             const possible_opponent = players_db.getPlayer(possible_opponent_id)
             if (possible_opponent.current_socket_id === null){
-                const error = `${opponent_username} is currently not logged in`
+                const error = `${validated_opponent_username} is currently not logged in`
                 socket.emit('joinGameError', error)
 
             } else if (possible_opponent.active_game_id === null){
-                const error = `${opponent_username} hasn't started a game yet, to start a game press New Game`
+                const error = `${validated_opponent_username} hasn't started a game yet, to start a game press New Game`
                 socket.emit('joinGameError', error)
 
             } else if (possible_opponent.active_opponent !== null){
-                const error = `${opponent_username} is already in an active game`
+                const error = `${validated_opponent_username} is already in an active game`
                 socket.emit('joinGameError', error)
 
             } else {
@@ -131,12 +189,18 @@ io.on('connection', socket => {
     })
 
     socket.on('confirmJoin', (opponent_username) => {
-        // check username with schema
+        const validated_opponent_username = validatedUsername(opponent_username)
+        if (validated_opponent_username === false){
+            const error = "Error joining game: username may only contain letters, numbers and underscores, start with a letter, and be 6 to 18 characters long"
+            socket.emit('consoleLogError', error)
+            return
+        }
+        
         if (!player_g || !game_g){
             return
         }
 
-        const possible_opponent_id = players_db.getPlayerIdFromUsername(opponent_username)
+        const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
         const possible_opponent = players_db.getPlayer(possible_opponent_id)
         if (player_g.active_game_id && !player_g.active_opponent && !possible_opponent.active_game_id){
             const opponent_color = (player_g.active_color === 'white') ? 'black' : 'white'
@@ -150,9 +214,14 @@ io.on('connection', socket => {
     })
 
     socket.on('ignoreJoin', (opponent_username) => {
-        // check username with schema
+        const validated_opponent_username = validatedUsername(opponent_username)
+        if (validated_opponent_username === false){
+            const error = "Error joining game: username may only contain letters, numbers and underscores, start with a letter, and be 6 to 18 characters long"
+            socket.emit('consoleLogError', error)
+            return
+        }
 
-        const possible_opponent_id = players_db.getPlayerIdFromUsername(opponent_username)
+        const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
         if (possible_opponent_id){
             const possible_opponent = players_db.getPlayer(possible_opponent_id)
 
@@ -162,7 +231,13 @@ io.on('connection', socket => {
     })
 
     socket.on('randomGame', (color) => {
-        // check color with schema
+        const validated_color = validatedColor(color)
+        if (validated_color === false){
+            const error = "Error creating game: color may only be white, black or random"
+            socket.emit('consoleLogError', error)
+            return
+        }
+        
         if (!player_g){
             return
         }
@@ -176,7 +251,7 @@ io.on('connection', socket => {
 
                 games_db.createGame(player_g.id)
                 game_g = games_db.getGame(player_g.id)
-                players_db.linkPlayerToGame(player_g.id, player_g.id, color)
+                players_db.linkPlayerToGame(player_g.id, player_g.id, validated_color)
 
                 const opponent_color = (player_g.active_color === 'white') ? 'black' : 'white'
                 players_db.linkPlayerToGame(possible_opponent.id, player_g.id, opponent_color)
@@ -233,13 +308,18 @@ io.on('connection', socket => {
     })
 
     socket.on('selectionMade', (cell) => {
+        const validated_cell = validatedCell(cell)
+        if (validated_cell === false){
+            const error = 'Validation error: invalid cell'
+            socket.emit('consoleLogError', error)
+            return
+        }
 
-        // check cell with schema and boundry conditions
         if (!player_g || !game_g || !opponent_g || !player_g.active_game_id){
             return
         }
 
-        const instructions = game_engine.getInstructionsForSelection(cell, game_g, player_g.active_color)
+        const instructions = game_engine.getInstructionsForSelection(validated_cell, game_g, player_g.active_color)
 
         for (let instruction of instructions){
             const action = instruction.action
@@ -292,13 +372,19 @@ io.on('connection', socket => {
     })
 
     socket.on('pawnPromotionTypeChosen', (type) => {
-        // check type with schema
+        const validated_type = validatedPromotionType(type)
+        if (validated_type === false){
+            const error = 'Validation error: invalid piece type'
+            socket.emit('consoleLogError', error)
+            return
+        }
+        
         if (!player_g || !game_g || !player_g.active_game_id){
             return
         }
 
         const unpromoted_pawn = games_db.getPawnEligibleForPromotion(player_g.active_game_id, player_g.active_color)
-        const promoted_pawn = games_db.promotePawnAndReturnIt(player_g.active_game_id, player_g.active_color, type)
+        const promoted_pawn = games_db.promotePawnAndReturnIt(player_g.active_game_id, player_g.active_color, validated_type)
 
         socket.emit('promotePawn', [unpromoted_pawn, promoted_pawn])
         if (opponent_g){
