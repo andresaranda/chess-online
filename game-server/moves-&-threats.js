@@ -120,7 +120,7 @@ function possiblePawnEnPassantCapture(initial_cell, board, player_color, y_sign,
     target_cell[1] += x_sign
     const move = evaluateMove(target_cell, board, player_color)
     if (move.piece?.has_moved_double && move.is_possible){
-        const final_cell = target_cell[0] + y_sign
+        const final_cell = [target_cell[0] + y_sign, target_cell[1]]
         possible_move.push({cell: final_cell, piece: move.piece, en_passant_captured_cell: target_cell})
     }
 
