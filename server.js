@@ -170,7 +170,7 @@ io.on('connection', socket => {
                 socket.emit('joinGameError', error)
 
             } else if (possible_opponent.active_game_id === null){
-                const error = `${validated_opponent_username} hasn't started a game yet, to start a game press New Game`
+                const error = `${validated_opponent_username} hasn't started a game yet, to start a game press Create New Game`
                 socket.emit('joinGameError', error)
 
             } else if (possible_opponent.active_opponent !== null){

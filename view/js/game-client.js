@@ -358,7 +358,7 @@ socket.on('logInSuccessful', (username) => { // temporarily on playerCreated
     player_info.classList.remove('hidden')
 
     const title = `Successfully logged in as: ${username}!`
-    const text = "To begin playing, create a New Game, Join a friends Game or Find a Random Opponent in the menu to the left."
+    const text = "To begin playing, create a new game, join a friend's game or join a random game in the menu to the left."
     openBoardAlertPopup(title, text)
 })
 
@@ -397,7 +397,7 @@ socket.on('newGameCreated', ([board, player_color]) => {
     player_color_g = player_color
 
     const title = "New game created!"
-    const text = "Ask a friend to Join your game by using your Username or click on 'Find Random Opponent' to be matched with a random player."
+    const text = "Ask a friend to Join your game by using your Username or click on 'Join Random Game' to be matched with a random player."
     openBoardAlertPopup(title, text)
     hideAllToggleElements()
 })
@@ -567,7 +567,7 @@ socket.on('informDeniedDrawRequest', () => {
 // FINISHED GAME MESSAGES:
 
 function openBoardAlertPopupForFinishedGame(title){
-    const text = "To play again, create a New Game, Join a friends Game or Find a Random Opponent in the menu to the left"
+    const text = "To play again, create a new game, join a friend's game or join a random game in the menu to the left"
     openBoardAlertPopup(title, text)
 }
 
