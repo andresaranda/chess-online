@@ -138,7 +138,9 @@ function getInstructionsForSelection(selected_cell, game, player_color){
             instructions.push({ action: 'updateMove', params: { new_play, new_board } })
             instructions.push({ action: 'deactivateBoard', params: 'bothPlayers' })
             instructions.push({ action: 'movePiece', params: new_play })
-            instructions.push({ action: 'checkIfGameOver', params: null })
+            if (!new_play.promotion){
+                instructions.push({ action: 'checkIfGameOver', params: null })
+            }
 
         // other one of the players pieces selected
         } else if ((player_color === selected_piece?.color) && ((selected_cell[0] !== last_selected_cell[0]) || (selected_cell[1] !== last_selected_cell[1]))){

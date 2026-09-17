@@ -89,6 +89,28 @@ io.on('connection', socket => {
         player_g = null
     }
 
+    function checkAndEmitGameOver(){
+        if (!player_g || !game_g){
+            return
+        }
+
+        const game_over_state = game_engine.getGameOverState(game_g, player_g.active_color)
+
+        if (game_over_state === 'checkmate'){
+            socket.emit('gameOverByCheckmateWon')
+            stopGame('gameOverByCheckmateLost')
+
+        } else if (game_over_state === 'stalemate'){
+            socket.emit('gameOverByStalemate')
+            stopGame('gameOverByStalemate')
+
+        } else if (game_over_state === 'deadPosition'){
+            socket.emit('gameOverByDeadPosition')
+            stopGame('gameOverByDeadPosition')
+
+        }
+    }
+
     socket.on('createPlayer', (username) => {
         const validated_username = validatedUsername(username)
         if (validated_username === false){
@@ -349,21 +371,7 @@ io.on('connection', socket => {
                 socket.emit('movePiece', [new_play, player_g.active_color])
 
             } else if (action === 'checkIfGameOver'){
-                const game_over_state = game_engine.getGameOverState(game_g, player_g.active_color)
-
-                if (game_over_state === 'checkmate'){
-                    socket.emit('gameOverByCheckmateWon')
-                    stopGame('gameOverByCheckmateLost')
-
-                } else if (game_over_state === 'stalemate'){
-                    socket.emit('gameOverByStalemate')
-                    stopGame('gameOverByStalemate')
-
-                } else if (game_over_state === 'deadPosition'){
-                    socket.emit('gameOverByDeadPosition')
-                    stopGame('gameOverByDeadPosition')
-
-                }
+                checkAndEmitGameOver()
 
             } else {
                 console.log('Error evaluating actions from game-engine on server')
@@ -390,6 +398,8 @@ io.on('connection', socket => {
         if (opponent_g){
             io.to(opponent_g.current_socket_id).emit('promotePawn', [unpromoted_pawn, promoted_pawn])
         }
+
+        checkAndEmitGameOver()
     })
 
     socket.on('disconnect', () => {

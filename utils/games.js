@@ -194,6 +194,9 @@ function promotePawnAndReturnIt(game_id, player_color, promotion_type){
     const promoted_pawn = createPiece(promotion_type, player_color, promotion_id)
     game.board[y][x] = promoted_pawn
 
+    delete player.pieces_alive[pawn_id]
+    player.pieces_alive[promoted_pawn.id] = promoted_pawn
+
     player.promotion_cell = null
     game.current_turn = enemy_color
 
