@@ -48,24 +48,26 @@ function createGame(player_id){
 
     // pieces names are used only in this module. IDs (third argument) are used in rest of front-end and back-end
 
-    game.board = [[Rbl, Nbl, Bbl, Qb, Kb, Bbr, Nbr, Rbr], 
-    [pb1, pb2, pb3, pb4, pb5, pb6, pb7, pb8], 
-    [null, null, null, null, null, null, null, null], 
-    [null, null, null, null, null, null, null, null], 
-    [null, null, null, null, null, null, null, null], 
-    [null, null, null, null, null, null, null, null], 
-    [pw1, pw2, pw3, pw4, pw5, pw6, pw7, pw8], 
-    [Rwl, Nwl, Bwl, Qw, Kw, Bwr, Nwr, Rwr]]
+    // game.board = [[Rbl, Nbl, Bbl, Qb, Kb, Bbr, Nbr, Rbr], 
+    // [pb1, pb2, pb3, pb4, pb5, pb6, pb7, pb8], 
+    // [null, null, null, null, null, null, null, null], 
+    // [null, null, null, null, null, null, null, null], 
+    // [null, null, null, null, null, null, null, null], 
+    // [null, null, null, null, null, null, null, null], 
+    // [pw1, pw2, pw3, pw4, pw5, pw6, pw7, pw8], 
+    // [Rwl, Nwl, Bwl, Qw, Kw, Bwr, Nwr, Rwr]]
 
     // FOR TESTING:
-    /* game.board = [[Rbl, null, null, null, Kb, null, null, Rbr], 
-    [pb1, pb2, pb3, pb4, pb5, pb6, pb7, pb8], 
-    [null, null, null, null, null, null, null, null], 
-    [null, null, null, null, null, null, null, null], 
-    [null, null, null, null, null, null, null, null], 
-    [null, null, null, null, null, null, null, null], 
-    [pw1, pw2, pw3, pw4, pw5, pw6, pw7, pw8], 
-    [Rwl, null, null, null, Kw, null, null, Rwr]] */
+    game.board = [
+        [null, null, null, null, null, null, Kb, null],   // 8: black king g8
+        [null, null, null, null, null, null, Rbl, null],  // 7: black rook g7 (pinned)
+        [null, null, null, null, null, null, null, null], // 6
+        [null, null, null, Nwr, null, null, null, null],  // 5: white knight d5
+        [null, null, null, null, null, null, null, null], // 4
+        [null, null, null, null, null, null, null, null], // 3
+        [null, null, null, null, null, null, Qw, null],   // 2: white queen g2 (pin)
+        [null, null, null, null, Kw, Rwl, null, Rwr]      // 1: king e1, rook f1, rook h1
+    ]
 
     function createPiecesObject(pieces_array){
         const pieces_object = {}

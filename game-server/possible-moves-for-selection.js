@@ -150,7 +150,24 @@ function getPossibleMovesForSelection(cell, board, player_color, kings_cell, thr
     return possible_moves
 }
 
+function canPlayerMove(board, player_color, kings_cell, threats_to_king = undefined){
+    for (let y = 0; y < 8; y++){
+        for (let x = 0; x < 8; x++){
+            const piece = board[y][x]
+            if (piece && (piece?.color === player_color)){
+                const cell = [y, x]
+                const possible_moves = getPossibleMovesForSelection(cell, board, player_color, kings_cell, threats_to_king)
+                if (possible_moves.length > 0){
+                    return true
+                }
+            }
+        }
+    }
+    return false
+}
+
 module.exports = {
     filterPossibleMovesToBlockThreat,
-    getPossibleMovesForSelection
+    getPossibleMovesForSelection,
+    canPlayerMove
 }

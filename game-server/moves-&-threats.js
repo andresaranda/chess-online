@@ -297,6 +297,9 @@ function possibleMovesKingCastling(cell_x, cell_y, board, player_color){
 
     const king = board[cell_y][cell_x]
     if (king?.has_not_moved){
+        if (isCellThreatend([cell_y, cell_x], board, player_color, true)){
+            return possible_moves
+        }
         const possible_castling_move_left = possibleKingCastlingMoveLeft(cell_x, cell_y, board, player_color)
         const possible_castling_move_right = possibleKingCastlingMoveRight(cell_x, cell_y, board, player_color)
 
