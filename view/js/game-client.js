@@ -209,6 +209,17 @@ ai_game_btn.addEventListener('click', () => {
 
 // 'special_btns' may be 'join', 'cancel', 'cancel-search', 'cancel-join', 'promotion', 'resign', 'draw'
 function openBoardAlertPopup(title, content, special_btns = null){
+    board_alert_join_btn.classList.add('hidden')
+    board_alert_ignore_btn.classList.add('hidden')
+    board_alert_cancel_btn.classList.add('hidden')
+    board_alert_cancel_search_btn.classList.add('hidden')
+    board_alert_cancel_join_btn.classList.add('hidden')
+    board_alert_promotion_btns.classList.add('hidden')
+    board_alert_confirm_resign_btn.classList.add('hidden')
+    board_alert_accept_draw_btn.classList.add('hidden')
+    board_alert_deny_draw_btn.classList.add('hidden')
+    board_alert_close_btn.classList.remove('hidden')
+
     board_alert.classList.remove('hidden')
     board_alert_title.textContent = title
     board_alert_content.textContent = content
@@ -250,6 +261,7 @@ function closeBoardAlertPopup(){
     board_alert_confirm_resign_btn.classList.add('hidden')
     board_alert_accept_draw_btn.classList.add('hidden')
     board_alert_deny_draw_btn.classList.add('hidden')
+    board_alert_close_btn.classList.remove('hidden')
 }
 
 function openQuickGameAlert(message){
@@ -664,6 +676,7 @@ socket.on('clearCache', () => {
     move_counter_g = 1
     is_ai_game_g = false
     is_ai_thinking_g = false
+    resetStockfishEngine()
     updateDrawButtonVisibility()
     updateSidebarForNoActiveGame()
     socket.emit('clearCacheOfOpponentAndGame')
@@ -834,6 +847,7 @@ function playAiMoveFromStockfish(ai_turn_payload){
 
         getBestMoveFromStockfish(fen, skill_level, move_time_ms).then((uci_move) => {
             if (!uci_move || (uci_move === '(none)')){
+                socket.emit('aiMoveFailed')
                 is_ai_thinking_g = false
                 return
             }
@@ -843,6 +857,7 @@ function playAiMoveFromStockfish(ai_turn_payload){
             is_ai_thinking_g = false
         }).catch((error) => {
             console.log('Stockfish AI error:', error)
+            socket.emit('aiMoveFailed')
             is_ai_thinking_g = false
         })
     } catch (error) {
@@ -1055,7 +1070,6 @@ board_alert_promotion_btns.addEventListener('click', (event) => {
     const type = possible_types[elem_id]
     if (type){
         socket.emit('pawnPromotionTypeChosen', type)
-        showElements([board_alert_close_btn])
         closeBoardAlertPopup()
     }
 })

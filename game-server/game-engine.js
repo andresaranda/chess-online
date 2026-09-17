@@ -181,7 +181,31 @@ function getGameOverState(game, player_color){
     return null
 }
 
+function getAnyLegalMove(game, player_color){
+    const board = game.board
+    const kings_cell = game[player_color].king.cell
+
+    for (let y = 0; y < 8; y++){
+        for (let x = 0; x < 8; x++){
+            const piece = board[y][x]
+            if (piece && (piece.color === player_color)){
+                const from_cell = [y, x]
+                const possible_moves = getPossibleMovesForSelection(from_cell, board, player_color, kings_cell)
+                if (possible_moves.length > 0){
+                    return {
+                        from_cell: from_cell,
+                        to_cell: possible_moves[0].cell
+                    }
+                }
+            }
+        }
+    }
+
+    return null
+}
+
 module.exports = {
     getInstructionsForSelection,
-    getGameOverState
+    getGameOverState,
+    getAnyLegalMove
 }

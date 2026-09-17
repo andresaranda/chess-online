@@ -118,6 +118,79 @@ io.on('connection', socket => {
         }
     }
 
+    function applyAiMove(from_cell, to_cell, promotion_type){
+        const ai_color = game_g.ai_color
+        const select_instructions = game_engine.getInstructionsForSelection(from_cell, game_g, ai_color)
+        for (let instruction of select_instructions){
+            if (instruction.action === 'updateSelection'){
+                const { new_active_moves, new_last_selected_cell } = instruction.params
+                games_db.updateGameSelection(game_g.id, ai_color, new_active_moves, new_last_selected_cell)
+            }
+        }
+
+        if (!game_g[ai_color].last_selected_cell){
+            games_db.updateGameSelection(game_g.id, ai_color, [], null)
+            return false
+        }
+
+        const move_instructions = game_engine.getInstructionsForSelection(to_cell, game_g, ai_color)
+        let move_was_made = false
+        for (let instruction of move_instructions){
+            const action = instruction.action
+
+            if (action === 'updateSelection'){
+                const { new_active_moves, new_last_selected_cell } = instruction.params
+                games_db.updateGameSelection(game_g.id, ai_color, new_active_moves, new_last_selected_cell)
+
+            } else if (action === 'updateMove'){
+                const { new_play, new_board } = instruction.params
+                games_db.updateGameMove(game_g.id, ai_color, new_play, new_board)
+
+            } else if (action === 'deactivateBoard'){
+                socket.emit('deactivateBoard')
+
+            } else if (action === 'movePiece'){
+                const new_play = instruction.params
+                socket.emit('movePiece', [new_play, player_g.active_color])
+                move_was_made = true
+            }
+        }
+
+        if (!move_was_made){
+            games_db.updateGameSelection(game_g.id, ai_color, [], null)
+            return false
+        }
+
+        if (game_g[ai_color].promotion_cell){
+            let validated_promotion_type = promotion_type
+            if (!validated_promotion_type){
+                validated_promotion_type = 'queen'
+            }
+            const unpromoted_pawn = games_db.getPawnEligibleForPromotion(game_g.id, ai_color)
+            const promoted_pawn = games_db.promotePawnAndReturnIt(game_g.id, ai_color, validated_promotion_type)
+            socket.emit('promotePawn', [unpromoted_pawn, promoted_pawn])
+        }
+
+        checkAndEmitGameOver(ai_color)
+        return true
+    }
+
+    function applyAiMoveOrFallback(from_cell, to_cell, promotion_type){
+        if (from_cell && to_cell && applyAiMove(from_cell, to_cell, promotion_type)){
+            return
+        }
+
+        const legal_move = game_engine.getAnyLegalMove(game_g, game_g.ai_color)
+        if (!legal_move){
+            games_db.updateGameSelection(game_g.id, game_g.ai_color, [], null)
+            checkAndEmitGameOver(player_g.active_color)
+            return
+        }
+
+        socket.emit('consoleLogError', 'AI move was illegal; applying a legal fallback move')
+        applyAiMove(legal_move.from_cell, legal_move.to_cell, 'queen')
+    }
+
     function checkAndEmitGameOver(moved_color){
         if (!player_g || !game_g){
             return
@@ -528,6 +601,9 @@ io.on('connection', socket => {
         if ((validated_from_cell === false) || (validated_to_cell === false) || (validated_from_cell === null) || (validated_to_cell === null)){
             const error = 'Validation error: invalid AI move cells'
             socket.emit('consoleLogError', error)
+            if (player_g && game_g && game_g.is_ai_game && (game_g.current_turn === game_g.ai_color)){
+                applyAiMoveOrFallback(null, null, null)
+            }
             return
         }
 
@@ -537,6 +613,9 @@ io.on('connection', socket => {
             if (validated_promotion_type === false){
                 const error = 'Validation error: invalid AI promotion type'
                 socket.emit('consoleLogError', error)
+                if (player_g && game_g && game_g.is_ai_game && (game_g.current_turn === game_g.ai_color)){
+                    applyAiMoveOrFallback(validated_from_cell, validated_to_cell, null)
+                }
                 return
             }
         }
@@ -548,57 +627,18 @@ io.on('connection', socket => {
             return
         }
 
-        const ai_color = game_g.ai_color
-        const select_instructions = game_engine.getInstructionsForSelection(validated_from_cell, game_g, ai_color)
-        for (let instruction of select_instructions){
-            if (instruction.action === 'updateSelection'){
-                const { new_active_moves, new_last_selected_cell } = instruction.params
-                games_db.updateGameSelection(game_g.id, ai_color, new_active_moves, new_last_selected_cell)
-            }
-        }
+        applyAiMoveOrFallback(validated_from_cell, validated_to_cell, validated_promotion_type)
+    })
 
-        if (!game_g[ai_color].last_selected_cell){
+    socket.on('aiMoveFailed', () => {
+        if (!player_g || !game_g || !game_g.is_ai_game || !player_g.active_game_id){
+            return
+        }
+        if (game_g.current_turn !== game_g.ai_color){
             return
         }
 
-        const move_instructions = game_engine.getInstructionsForSelection(validated_to_cell, game_g, ai_color)
-        let move_was_made = false
-        for (let instruction of move_instructions){
-            const action = instruction.action
-
-            if (action === 'updateSelection'){
-                const { new_active_moves, new_last_selected_cell } = instruction.params
-                games_db.updateGameSelection(game_g.id, ai_color, new_active_moves, new_last_selected_cell)
-
-            } else if (action === 'updateMove'){
-                const { new_play, new_board } = instruction.params
-                games_db.updateGameMove(game_g.id, ai_color, new_play, new_board)
-
-            } else if (action === 'deactivateBoard'){
-                socket.emit('deactivateBoard')
-
-            } else if (action === 'movePiece'){
-                const new_play = instruction.params
-                socket.emit('movePiece', [new_play, player_g.active_color])
-                move_was_made = true
-            }
-        }
-
-        if (!move_was_made){
-            games_db.updateGameSelection(game_g.id, ai_color, [], null)
-            return
-        }
-
-        if (game_g[ai_color].promotion_cell){
-            if (!validated_promotion_type){
-                validated_promotion_type = 'queen'
-            }
-            const unpromoted_pawn = games_db.getPawnEligibleForPromotion(game_g.id, ai_color)
-            const promoted_pawn = games_db.promotePawnAndReturnIt(game_g.id, ai_color, validated_promotion_type)
-            socket.emit('promotePawn', [unpromoted_pawn, promoted_pawn])
-        }
-
-        checkAndEmitGameOver(ai_color)
+        applyAiMoveOrFallback(null, null, null)
     })
 
     socket.on('pawnPromotionTypeChosen', (type) => {
