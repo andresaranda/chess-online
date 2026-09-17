@@ -113,7 +113,7 @@ function uciMoveToCellsAndPromotion(uci_move){
 }
 
 function getSkillLevelFromDifficulty(difficulty){
-    const skill_levels = { easy: 3, medium: 10, hard: 18 }
+    const skill_levels = { easy: 2, medium: 9, hard: 17 }
     return skill_levels[difficulty]
 }
 
