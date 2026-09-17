@@ -141,6 +141,12 @@ function showSeekingOrWaitingOptionElements(){
     }
 }
 
+function toggleSidebarOptions(elem){
+    toggleHideOrShow(elem)
+    hideAllToggleElementsExceptEspecified(elem)
+    showSeekingOrWaitingOptionElements()
+}
+
 function updateLeftSidebarToLogIn(username){
     user_data.textContent = username
     toggleHideOrShow(quick_game_options)
@@ -177,33 +183,23 @@ function updateDrawButtonVisibility(){
 }
 
 quick_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(quick_game_options)
-    hideAllToggleElementsExceptEspecified(quick_game_options)
-    showSeekingOrWaitingOptionElements()
+    toggleSidebarOptions(quick_game_options)
 })
 
 log_out_btn.addEventListener('click', () => {
-    toggleHideOrShow(log_out_options)
-    hideAllToggleElementsExceptEspecified(log_out_options)
-    showSeekingOrWaitingOptionElements()
+    toggleSidebarOptions(log_out_options)
 })
 
 new_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(new_game_options)
-    hideAllToggleElementsExceptEspecified(new_game_options)
-    showSeekingOrWaitingOptionElements()
+    toggleSidebarOptions(new_game_options)
 })
 
 join_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(join_game_options)
-    hideAllToggleElementsExceptEspecified(join_game_options)
-    showSeekingOrWaitingOptionElements()
+    toggleSidebarOptions(join_game_options)
 })
 
 ai_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(ai_game_options)
-    hideAllToggleElementsExceptEspecified(ai_game_options)
-    showSeekingOrWaitingOptionElements()
+    toggleSidebarOptions(ai_game_options)
 })
 
 
@@ -394,18 +390,58 @@ function clearGameData(){
 
 // PLAYER CREATION AND DELETION, AND GAME CREATION AND JOINING:
 
-function cancelRandomSearch(){
-    socket.emit('cancelRandomSearch')
+function clearRandomSearchState(){
     is_seeking_random_g = false
     closeRandomOpponentAlert()
     hideElements([random_opponent_cancel_btn])
 }
 
-function cancelJoinRequest(){
-    socket.emit('cancelJoinRequest')
+function clearJoinWaitState(){
     is_waiting_join_g = false
     closeJoinGameAlert()
     hideElements([join_game_cancel_btn])
+}
+
+function cancelRandomSearch(){
+    socket.emit('cancelRandomSearch')
+    clearRandomSearchState()
+}
+
+function cancelJoinRequest(){
+    socket.emit('cancelJoinRequest')
+    clearJoinWaitState()
+}
+
+function openCancelPendingRequestPopup(){
+    if (is_seeking_random_g){
+        const title = "Cancel search?"
+        const text = "This will stop looking for a random opponent."
+        openBoardAlertPopup(title, text, 'cancel-search')
+        return true
+    }
+    if (is_waiting_join_g){
+        const title = "Cancel join request?"
+        const text = "This will withdraw your request to join the game."
+        openBoardAlertPopup(title, text, 'cancel-join')
+        return true
+    }
+    return false
+}
+
+function startRandomSearch(){
+    is_seeking_random_g = true
+    openRandomOpponentAlert("Finding opponent...")
+    showElements([random_opponent_cancel_btn])
+    hideAllToggleElementsExceptEspecified(random_opponent_options)
+    socket.emit('randomGame', generateRandomColor())
+}
+
+function startJoinWait(opponents_username){
+    is_waiting_join_g = true
+    openJoinGameAlert("Waiting for player to respond...")
+    showElements([join_game_cancel_btn])
+    hideAllToggleElementsExceptEspecified(join_game_options)
+    socket.emit('joinGame', opponents_username)
 }
 
 quick_game_input_btn.addEventListener('click', () => {
@@ -438,27 +474,15 @@ socket.on('playerCreationError', (error) => {
 })
 
 log_out_confirm_btn.addEventListener('click', () => {
-    if (is_seeking_random_g){
-        const title = "Cancel search?"
-        const text = "This will stop looking for a random opponent."
-        openBoardAlertPopup(title, text, 'cancel-search')
-        return
-    }
-    if (is_waiting_join_g){
-        const title = "Cancel join request?"
-        const text = "This will withdraw your request to join the game."
-        openBoardAlertPopup(title, text, 'cancel-join')
+    if (openCancelPendingRequestPopup()){
         return
     }
     socket.emit('deletePlayer') // temporary, should be logPlayerOut
 })
 
 socket.on('logOutSuccessful', () => { // temporarily on playerDeleted
-    is_seeking_random_g = false
-    is_waiting_join_g = false
-    closeRandomOpponentAlert()
-    closeJoinGameAlert()
-    hideElements([random_opponent_cancel_btn, join_game_cancel_btn])
+    clearRandomSearchState()
+    clearJoinWaitState()
     updateLeftSidebarToLogOut()
     clearGameData()
     player_name.textContent = ""
@@ -475,16 +499,7 @@ new_game_options.addEventListener('click', (event) => {
     
     const color = possible_colors[elem_id]
     if (color){
-        if (is_seeking_random_g){
-            const title = "Cancel search?"
-            const text = "This will stop looking for a random opponent."
-            openBoardAlertPopup(title, text, 'cancel-search')
-            return
-        }
-        if (is_waiting_join_g){
-            const title = "Cancel join request?"
-            const text = "This will withdraw your request to join the game."
-            openBoardAlertPopup(title, text, 'cancel-join')
+        if (openCancelPendingRequestPopup()){
             return
         }
         socket.emit('createGame', color)
@@ -493,11 +508,8 @@ new_game_options.addEventListener('click', (event) => {
 
 socket.on('newGameCreated', ([board, player_color]) => {
     clearGameData()
-    is_seeking_random_g = false
-    is_waiting_join_g = false
-    closeRandomOpponentAlert()
-    closeJoinGameAlert()
-    hideElements([random_opponent_cancel_btn, join_game_cancel_btn])
+    clearRandomSearchState()
+    clearJoinWaitState()
     createBoard(board, player_color)
     player_color_g = player_color
     is_ai_game_g = false
@@ -522,18 +534,11 @@ join_game_input_btn.addEventListener('click', () => {
         return
     }
 
-    if (is_seeking_random_g){
-        const title = "Cancel search?"
-        const text = "This will stop looking for a random opponent."
-        openBoardAlertPopup(title, text, 'cancel-search')
+    if (openCancelPendingRequestPopup()){
         return
     }
 
-    is_waiting_join_g = true
-    openJoinGameAlert("Waiting for player to respond...")
-    showElements([join_game_cancel_btn])
-    hideAllToggleElementsExceptEspecified(join_game_options)
-    socket.emit('joinGame', opponents_username)
+    startJoinWait(opponents_username)
 })
 
 socket.on('joinGameRequest', (opponent_username) => {
@@ -572,11 +577,8 @@ board_alert_ignore_btn.addEventListener('click', () => {
 socket.on('newGameJoined', ([board, player_color]) => {
     clearGameData()
     createBoard(board, player_color)
-    is_waiting_join_g = false
-    is_seeking_random_g = false
-    closeJoinGameAlert()
-    closeRandomOpponentAlert()
-    hideElements([join_game_cancel_btn, random_opponent_cancel_btn])
+    clearJoinWaitState()
+    clearRandomSearchState()
     player_color_g = player_color
 
     const title = "Joined new game!"
@@ -591,18 +593,14 @@ socket.on('joinGameSuccessful', (opponent_username, is_ai_game = false) => {
     is_ai_game_g = is_ai_game
     updateDrawButtonVisibility()
     updateSidebarForActiveGame()
-    is_seeking_random_g = false
-    is_waiting_join_g = false
-    closeRandomOpponentAlert()
-    closeJoinGameAlert()
-    hideElements([random_opponent_cancel_btn, join_game_cancel_btn])
+    clearRandomSearchState()
+    clearJoinWaitState()
     socket.emit('cacheOpponentAndGame')
     hideAllToggleElements()
 })
 
 socket.on('joinGameError', (error) => {
-    is_waiting_join_g = false
-    hideElements([join_game_cancel_btn])
+    clearJoinWaitState()
     openJoinGameAlert(error)
 })
 
@@ -611,17 +609,10 @@ random_opponent_btn.addEventListener('click', () => {
         cancelRandomSearch()
         return
     }
-    if (is_waiting_join_g){
-        const title = "Cancel join request?"
-        const text = "This will withdraw your request to join the game."
-        openBoardAlertPopup(title, text, 'cancel-join')
+    if (openCancelPendingRequestPopup()){
         return
     }
-    is_seeking_random_g = true
-    openRandomOpponentAlert("Finding opponent...")
-    showElements([random_opponent_cancel_btn])
-    hideAllToggleElementsExceptEspecified(random_opponent_options)
-    socket.emit('randomGame', generateRandomColor())
+    startRandomSearch()
 })
 
 random_opponent_cancel_btn.addEventListener('click', () => {
@@ -642,16 +633,7 @@ ai_game_options.addEventListener('click', (event) => {
     }
     const difficulty = possible_difficulties[elem_id]
     if (difficulty){
-        if (is_seeking_random_g){
-            const title = "Cancel search?"
-            const text = "This will stop looking for a random opponent."
-            openBoardAlertPopup(title, text, 'cancel-search')
-            return
-        }
-        if (is_waiting_join_g){
-            const title = "Cancel join request?"
-            const text = "This will withdraw your request to join the game."
-            openBoardAlertPopup(title, text, 'cancel-join')
+        if (openCancelPendingRequestPopup()){
             return
         }
         const color = generateRandomColor()
@@ -670,6 +652,12 @@ function cancelCurrentGame(){
     clearGameData()
 }
 
+function openCancelCurrentGamePopup(){
+    const title = "Cancel current game?"
+    const text = "This action will cancel the current game."
+    openBoardAlertPopup(title, text, 'cancel')
+}
+
 socket.on('clearCache', () => {
     player_color_g = null
     requesting_opponent_g = null
@@ -682,9 +670,7 @@ socket.on('clearCache', () => {
 })
 
 exit_game_btn.addEventListener('click', () => {
-    const title = "Cancel current game?"
-    const text = "This action will cancel the current game."
-    openBoardAlertPopup(title, text, 'cancel')
+    openCancelCurrentGamePopup()
 })
 
 board_alert_close_btn.addEventListener('click', () => {
@@ -696,9 +682,7 @@ board_alert_close_btn.addEventListener('click', () => {
 })
 
 socket.on('askIfCancelCurrentGame', () => {
-    const title = "Cancel current game?"
-    const text = "This action will cancel the current game."
-    openBoardAlertPopup(title, text, 'cancel')
+    openCancelCurrentGamePopup()
 })
 
 board_alert_cancel_btn.addEventListener('click', () => {
