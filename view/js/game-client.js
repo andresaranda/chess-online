@@ -8,11 +8,8 @@ let player_color_g = null
 let move_counter_g = 1
 let is_ai_game_g = false
 let is_ai_thinking_g = false
-let is_in_active_game_g = false
 let is_seeking_random_g = false
 let is_waiting_join_g = false
-let cancel_popup_mode_g = 'game'
-let pending_after_search_cancel_g = null
 
 // syntactic sugar
 function getElement(selectors){
@@ -42,6 +39,8 @@ const board_alert_content = getElement('#board-alert-box .content')
 const board_alert_join_btn = getElement('#board-alert-box .join-btn')
 const board_alert_ignore_btn = getElement('#board-alert-box .ignore-btn')
 const board_alert_cancel_btn = getElement('#board-alert-box .cancel-btn')
+const board_alert_cancel_search_btn = getElement('#board-alert-box .cancel-search-btn')
+const board_alert_cancel_join_btn = getElement('#board-alert-box .cancel-join-btn')
 const board_alert_promotion_btns = getElement('#promotion-btns')
 const board_alert_close_btn = getElement('#board-alert-box .close-btn')
 const board_alert_confirm_resign_btn = getElement('#board-alert-box .confirm-resign-btn')
@@ -123,28 +122,22 @@ function toggleHideOrShow(elem){
 function hideAllToggleElementsExceptEspecified(elem_kept){
     const elem_kept_id = elem_kept.id
     for (let elem of sidebar_toggle_elements){
-        if (elem.id === elem_kept_id){
-            continue
+        if (elem.id !== elem_kept_id){
+            elems_to_hide.push([elem])
         }
-        if (is_seeking_random_g && (elem === random_opponent_options)){
-            continue
-        }
-        if (is_waiting_join_g && ((elem === join_game_options) || (elem === join_game_input_alert))){
-            continue
-        }
-        elem.classList.add('hidden')
     }
 }
 
 function hideAllToggleElements(){
-    for (let elem of sidebar_toggle_elements){
-        if (is_seeking_random_g && (elem === random_opponent_options)){
-            continue
-        }
-        if (is_waiting_join_g && ((elem === join_game_options) || (elem === join_game_input_alert))){
-            continue
-        }
-        elem.classList.add('hidden')
+    hideElements(sidebar_toggle_elements)
+}
+
+function showSeekingOrWaitingOptionElements(){
+    if (is_seeking_random_g){
+        showElements([random_opponent_options])
+    }
+    if (is_waiting_join_g){
+        showElements([join_game_options, join_game_input_alert])
     }
 }
 
@@ -154,7 +147,6 @@ function updateLeftSidebarToLogIn(username){
     hideElements(logged_out_elements)
     showElements(logged_in_elements)
     hideElements(in_game_menu_elements)
-    is_in_active_game_g = false
 }
 
 function updateLeftSidebarToLogOut(){
@@ -163,164 +155,55 @@ function updateLeftSidebarToLogOut(){
     hideElements(logged_in_elements)
     hideElements(in_game_menu_elements)
     showElements(logged_out_elements)
-    is_in_active_game_g = false
-    clearRandomSearchUi()
-    clearJoinWaitUi()
 }
 
 function updateSidebarForActiveGame(){
-    is_in_active_game_g = true
     hideElements(out_of_game_menu_elements)
     hideAllToggleElements()
     showElements(in_game_menu_elements)
 }
 
 function updateSidebarForNoActiveGame(){
-    is_in_active_game_g = false
     hideElements(in_game_menu_elements)
     showElements(out_of_game_menu_elements)
 }
 
 function updateDrawButtonVisibility(){
     if (is_ai_game_g){
-        draw_btn.classList.add('hidden')
-        draw_btn.parentElement.classList.add('hidden')
+        hideElements([draw_btn, draw_btn.parentElement])
     } else {
-        draw_btn.classList.remove('hidden')
-        draw_btn.parentElement.classList.remove('hidden')
+        showElements([draw_btn, draw_btn.parentElement])
     }
-}
-
-function clearRandomSearchUi(){
-    is_seeking_random_g = false
-    closeRandomOpponentAlert()
-    random_opponent_cancel_btn.classList.add('hidden')
-}
-
-function startRandomSearch(){
-    is_seeking_random_g = true
-    openRandomOpponentAlert("Finding opponent...")
-    random_opponent_cancel_btn.classList.remove('hidden')
-    hideAllToggleElementsExceptEspecified(random_opponent_options)
-    socket.emit('randomGame', generateRandomColor())
-}
-
-function cancelRandomSearch(){
-    socket.emit('cancelRandomSearch')
-    clearRandomSearchUi()
-}
-
-function clearJoinWaitUi(){
-    is_waiting_join_g = false
-    join_game_cancel_btn.classList.add('hidden')
-}
-
-function startJoinWait(opponents_username){
-    is_waiting_join_g = true
-    openJoinGameAlert("Waiting for player to respond...")
-    join_game_cancel_btn.classList.remove('hidden')
-    join_game_options.classList.remove('hidden')
-    hideAllToggleElementsExceptEspecified(join_game_options)
-    socket.emit('joinGame', opponents_username)
-}
-
-function cancelJoinRequest(){
-    socket.emit('cancelJoinRequest')
-    clearJoinWaitUi()
-    closeJoinGameAlert()
-}
-
-function openCancelGamePopup(){
-    cancel_popup_mode_g = 'game'
-    pending_after_search_cancel_g = null
-    board_alert_cancel_btn.textContent = 'CANCEL GAME'
-    openBoardAlertPopup('Cancel current game?', 'This action will cancel the current game.', 'cancel')
-}
-
-function openCancelSearchPopup(after_cancel = null){
-    cancel_popup_mode_g = 'search'
-    pending_after_search_cancel_g = after_cancel
-    board_alert_cancel_btn.textContent = 'CANCEL SEARCH'
-    openBoardAlertPopup('Cancel search?', 'This will stop looking for a random opponent.', 'cancel')
-}
-
-function openCancelJoinPopup(after_cancel = null){
-    cancel_popup_mode_g = 'join'
-    pending_after_search_cancel_g = after_cancel
-    board_alert_cancel_btn.textContent = 'CANCEL REQUEST'
-    openBoardAlertPopup('Cancel join request?', 'This will withdraw your request to join the game.', 'cancel')
-}
-
-function runOrAskToCancelPending(action){
-    if (is_seeking_random_g){
-        openCancelSearchPopup(action)
-        return
-    }
-    if (is_waiting_join_g){
-        openCancelJoinPopup(action)
-        return
-    }
-    action()
 }
 
 quick_game_btn.addEventListener('click', () => {
     toggleHideOrShow(quick_game_options)
     hideAllToggleElementsExceptEspecified(quick_game_options)
+    showSeekingOrWaitingOptionElements()
 })
 
 log_out_btn.addEventListener('click', () => {
-    runOrAskToCancelPending(() => {
-        toggleHideOrShow(log_out_options)
-        hideAllToggleElementsExceptEspecified(log_out_options)
-    })
+    toggleHideOrShow(log_out_options)
+    hideAllToggleElementsExceptEspecified(log_out_options)
+    showSeekingOrWaitingOptionElements()
 })
 
 new_game_btn.addEventListener('click', () => {
-    runOrAskToCancelPending(() => {
-        toggleHideOrShow(new_game_options)
-        hideAllToggleElementsExceptEspecified(new_game_options)
-    })
+    toggleHideOrShow(new_game_options)
+    hideAllToggleElementsExceptEspecified(new_game_options)
+    showSeekingOrWaitingOptionElements()
 })
 
 join_game_btn.addEventListener('click', () => {
-    if (is_waiting_join_g){
-        cancelJoinRequest()
-        join_game_options.classList.add('hidden')
-        return
-    }
-    runOrAskToCancelPending(() => {
-        toggleHideOrShow(join_game_options)
-        hideAllToggleElementsExceptEspecified(join_game_options)
-    })
+    toggleHideOrShow(join_game_options)
+    hideAllToggleElementsExceptEspecified(join_game_options)
+    showSeekingOrWaitingOptionElements()
 })
 
 ai_game_btn.addEventListener('click', () => {
-    runOrAskToCancelPending(() => {
-        toggleHideOrShow(ai_game_options)
-        hideAllToggleElementsExceptEspecified(ai_game_options)
-    })
-})
-
-exit_game_btn.addEventListener('click', () => {
-    openCancelGamePopup()
-})
-
-random_opponent_btn.addEventListener('click', () => {
-    if (is_seeking_random_g){
-        cancelRandomSearch()
-        return
-    }
-    runOrAskToCancelPending(() => {
-        startRandomSearch()
-    })
-})
-
-random_opponent_cancel_btn.addEventListener('click', () => {
-    cancelRandomSearch()
-})
-
-join_game_cancel_btn.addEventListener('click', () => {
-    cancelJoinRequest()
+    toggleHideOrShow(ai_game_options)
+    hideAllToggleElementsExceptEspecified(ai_game_options)
+    showSeekingOrWaitingOptionElements()
 })
 
 
@@ -328,7 +211,7 @@ join_game_cancel_btn.addEventListener('click', () => {
 
 // FUNCTIONS FOR OPENING AND CLOSING FUNCTIONAL ELEMENTS:
 
-// 'special_btns' may be 'join', 'cancel', 'promotion', 'resign', 'draw'
+// 'special_btns' may be 'join', 'cancel', 'cancel-search', 'cancel-join', 'promotion', 'resign', 'draw'
 function openBoardAlertPopup(title, content, special_btns = null){
     board_alert.classList.remove('hidden')
     board_alert_title.textContent = title
@@ -341,6 +224,10 @@ function openBoardAlertPopup(title, content, special_btns = null){
         board_alert_ignore_btn.classList.remove('hidden')
     } else if (special_btns === 'cancel'){
         board_alert_cancel_btn.classList.remove('hidden')
+    } else if (special_btns === 'cancel-search'){
+        board_alert_cancel_search_btn.classList.remove('hidden')
+    } else if (special_btns === 'cancel-join'){
+        board_alert_cancel_join_btn.classList.remove('hidden')
     } else if (special_btns === 'promotion'){
         board_alert_promotion_btns.classList.remove('hidden')
         board_alert_close_btn.classList.add('hidden')
@@ -361,11 +248,12 @@ function closeBoardAlertPopup(){
     board_alert_join_btn.classList.add('hidden')
     board_alert_ignore_btn.classList.add('hidden')
     board_alert_cancel_btn.classList.add('hidden')
+    board_alert_cancel_search_btn.classList.add('hidden')
+    board_alert_cancel_join_btn.classList.add('hidden')
     board_alert_promotion_btns.classList.add('hidden')
     board_alert_confirm_resign_btn.classList.add('hidden')
     board_alert_accept_draw_btn.classList.add('hidden')
     board_alert_deny_draw_btn.classList.add('hidden')
-    board_alert_cancel_btn.textContent = 'CANCEL GAME'
 }
 
 function openQuickGameAlert(message){
@@ -498,13 +386,27 @@ function clearGameData(){
     deleteLastMovesFromTable()
     board_element.style.backgroundImage = 'url(../images/checkered-board.svg)'
     opponent_name.textContent = ""
-    opponent_info.classList.add('hidden')
+    hideElements([opponent_info])
 }
 
 
 
 
 // PLAYER CREATION AND DELETION, AND GAME CREATION AND JOINING:
+
+function cancelRandomSearch(){
+    socket.emit('cancelRandomSearch')
+    is_seeking_random_g = false
+    closeRandomOpponentAlert()
+    hideElements([random_opponent_cancel_btn])
+}
+
+function cancelJoinRequest(){
+    socket.emit('cancelJoinRequest')
+    is_waiting_join_g = false
+    closeJoinGameAlert()
+    hideElements([join_game_cancel_btn])
+}
 
 quick_game_input_btn.addEventListener('click', () => {
     const proposed_username = quick_game_input.value
@@ -524,7 +426,7 @@ quick_game_random_btn.addEventListener('click', () => {
 socket.on('logInSuccessful', (username) => { // temporarily on playerCreated
     updateLeftSidebarToLogIn(username)
     player_name.textContent = username
-    player_info.classList.remove('hidden')
+    showElements([player_info])
 
     const title = `Successfully logged in as: ${username}!`
     const text = "To begin playing, create a new game, join a friend's game or join a random game in the menu to the left."
@@ -536,14 +438,31 @@ socket.on('playerCreationError', (error) => {
 })
 
 log_out_confirm_btn.addEventListener('click', () => {
+    if (is_seeking_random_g){
+        const title = "Cancel search?"
+        const text = "This will stop looking for a random opponent."
+        openBoardAlertPopup(title, text, 'cancel-search')
+        return
+    }
+    if (is_waiting_join_g){
+        const title = "Cancel join request?"
+        const text = "This will withdraw your request to join the game."
+        openBoardAlertPopup(title, text, 'cancel-join')
+        return
+    }
     socket.emit('deletePlayer') // temporary, should be logPlayerOut
 })
 
 socket.on('logOutSuccessful', () => { // temporarily on playerDeleted
+    is_seeking_random_g = false
+    is_waiting_join_g = false
+    closeRandomOpponentAlert()
+    closeJoinGameAlert()
+    hideElements([random_opponent_cancel_btn, join_game_cancel_btn])
     updateLeftSidebarToLogOut()
     clearGameData()
     player_name.textContent = ""
-    player_info.classList.add('hidden')
+    hideElements([player_info])
 
     const title = "Username cleared."
     const text = "To play again, press Log-in in the left menu: pick a username or press Random Name for an automated one."
@@ -556,14 +475,29 @@ new_game_options.addEventListener('click', (event) => {
     
     const color = possible_colors[elem_id]
     if (color){
+        if (is_seeking_random_g){
+            const title = "Cancel search?"
+            const text = "This will stop looking for a random opponent."
+            openBoardAlertPopup(title, text, 'cancel-search')
+            return
+        }
+        if (is_waiting_join_g){
+            const title = "Cancel join request?"
+            const text = "This will withdraw your request to join the game."
+            openBoardAlertPopup(title, text, 'cancel-join')
+            return
+        }
         socket.emit('createGame', color)
     }
 })
 
 socket.on('newGameCreated', ([board, player_color]) => {
     clearGameData()
-    clearRandomSearchUi()
-    clearJoinWaitUi()
+    is_seeking_random_g = false
+    is_waiting_join_g = false
+    closeRandomOpponentAlert()
+    closeJoinGameAlert()
+    hideElements([random_opponent_cancel_btn, join_game_cancel_btn])
     createBoard(board, player_color)
     player_color_g = player_color
     is_ai_game_g = false
@@ -588,9 +522,18 @@ join_game_input_btn.addEventListener('click', () => {
         return
     }
 
-    runOrAskToCancelPending(() => {
-        startJoinWait(opponents_username)
-    })
+    if (is_seeking_random_g){
+        const title = "Cancel search?"
+        const text = "This will stop looking for a random opponent."
+        openBoardAlertPopup(title, text, 'cancel-search')
+        return
+    }
+
+    is_waiting_join_g = true
+    openJoinGameAlert("Waiting for player to respond...")
+    showElements([join_game_cancel_btn])
+    hideAllToggleElementsExceptEspecified(join_game_options)
+    socket.emit('joinGame', opponents_username)
 })
 
 socket.on('joinGameRequest', (opponent_username) => {
@@ -629,9 +572,11 @@ board_alert_ignore_btn.addEventListener('click', () => {
 socket.on('newGameJoined', ([board, player_color]) => {
     clearGameData()
     createBoard(board, player_color)
-    clearJoinWaitUi()
+    is_waiting_join_g = false
+    is_seeking_random_g = false
     closeJoinGameAlert()
-    clearRandomSearchUi()
+    closeRandomOpponentAlert()
+    hideElements([join_game_cancel_btn, random_opponent_cancel_btn])
     player_color_g = player_color
 
     const title = "Joined new game!"
@@ -642,20 +587,50 @@ socket.on('newGameJoined', ([board, player_color]) => {
 // gets sent to both players
 socket.on('joinGameSuccessful', (opponent_username, is_ai_game = false) => {
     opponent_name.textContent = opponent_username
-    opponent_info.classList.remove('hidden')
+    showElements([opponent_info])
     is_ai_game_g = is_ai_game
     updateDrawButtonVisibility()
     updateSidebarForActiveGame()
-    clearRandomSearchUi()
-    clearJoinWaitUi()
+    is_seeking_random_g = false
+    is_waiting_join_g = false
+    closeRandomOpponentAlert()
     closeJoinGameAlert()
+    hideElements([random_opponent_cancel_btn, join_game_cancel_btn])
     socket.emit('cacheOpponentAndGame')
     hideAllToggleElements()
 })
 
 socket.on('joinGameError', (error) => {
-    clearJoinWaitUi()
+    is_waiting_join_g = false
+    hideElements([join_game_cancel_btn])
     openJoinGameAlert(error)
+})
+
+random_opponent_btn.addEventListener('click', () => {
+    if (is_seeking_random_g){
+        cancelRandomSearch()
+        return
+    }
+    if (is_waiting_join_g){
+        const title = "Cancel join request?"
+        const text = "This will withdraw your request to join the game."
+        openBoardAlertPopup(title, text, 'cancel-join')
+        return
+    }
+    is_seeking_random_g = true
+    openRandomOpponentAlert("Finding opponent...")
+    showElements([random_opponent_cancel_btn])
+    hideAllToggleElementsExceptEspecified(random_opponent_options)
+    socket.emit('randomGame', generateRandomColor())
+})
+
+random_opponent_cancel_btn.addEventListener('click', () => {
+    cancelRandomSearch()
+})
+
+join_game_cancel_btn.addEventListener('click', () => {
+    cancelJoinRequest()
+    hideElements([join_game_options])
 })
 
 ai_game_options.addEventListener('click', (event) => {
@@ -667,45 +642,22 @@ ai_game_options.addEventListener('click', (event) => {
     }
     const difficulty = possible_difficulties[elem_id]
     if (difficulty){
+        if (is_seeking_random_g){
+            const title = "Cancel search?"
+            const text = "This will stop looking for a random opponent."
+            openBoardAlertPopup(title, text, 'cancel-search')
+            return
+        }
+        if (is_waiting_join_g){
+            const title = "Cancel join request?"
+            const text = "This will withdraw your request to join the game."
+            openBoardAlertPopup(title, text, 'cancel-join')
+            return
+        }
         const color = generateRandomColor()
         socket.emit('createAiGame', [color, difficulty])
         hideAllToggleElements()
     }
-})
-
-function playAiMoveFromStockfish(ai_turn_payload){
-    if (is_ai_thinking_g){
-        return
-    }
-
-    is_ai_thinking_g = true
-
-    try {
-        const fen = boardToFen(ai_turn_payload.board, ai_turn_payload.current_turn)
-        const skill_level = getSkillLevelFromDifficulty(ai_turn_payload.difficulty)
-        const move_time_ms = getMoveTimeFromDifficulty(ai_turn_payload.difficulty)
-
-        getBestMoveFromStockfish(fen, skill_level, move_time_ms).then((uci_move) => {
-            if (!uci_move || (uci_move === '(none)')){
-                is_ai_thinking_g = false
-                return
-            }
-
-            const { from_cell, to_cell, promotion_type } = uciMoveToCellsAndPromotion(uci_move)
-            socket.emit('aiMoveMade', [from_cell, to_cell, promotion_type])
-            is_ai_thinking_g = false
-        }).catch((error) => {
-            console.log('Stockfish AI error:', error)
-            is_ai_thinking_g = false
-        })
-    } catch (error) {
-        console.log('Stockfish AI setup error:', error)
-        is_ai_thinking_g = false
-    }
-}
-
-socket.on('aiTurnToMove', (ai_turn_payload) => {
-    playAiMoveFromStockfish(ai_turn_payload)
 })
 
 
@@ -716,13 +668,6 @@ socket.on('aiTurnToMove', (ai_turn_payload) => {
 function cancelCurrentGame(){
     socket.emit('confirmCancel')
     clearGameData()
-    player_color_g = null
-    requesting_opponent_g = null
-    move_counter_g = 1
-    is_ai_game_g = false
-    is_ai_thinking_g = false
-    updateDrawButtonVisibility()
-    updateSidebarForNoActiveGame()
 }
 
 socket.on('clearCache', () => {
@@ -736,46 +681,39 @@ socket.on('clearCache', () => {
     socket.emit('clearCacheOfOpponentAndGame')
 })
 
+exit_game_btn.addEventListener('click', () => {
+    const title = "Cancel current game?"
+    const text = "This action will cancel the current game."
+    openBoardAlertPopup(title, text, 'cancel')
+})
+
 board_alert_close_btn.addEventListener('click', () => {
     if (board_alert_title.textContent === "Join Request"){
         ignoreJoinRequest()
     } else {
-        pending_after_search_cancel_g = null
-        cancel_popup_mode_g = 'game'
         closeBoardAlertPopup()
     }
 })
 
 socket.on('askIfCancelCurrentGame', () => {
-    openCancelGamePopup()
+    const title = "Cancel current game?"
+    const text = "This action will cancel the current game."
+    openBoardAlertPopup(title, text, 'cancel')
 })
 
 board_alert_cancel_btn.addEventListener('click', () => {
-    if (cancel_popup_mode_g === 'search'){
-        const after_cancel = pending_after_search_cancel_g
-        pending_after_search_cancel_g = null
-        cancel_popup_mode_g = 'game'
-        cancelRandomSearch()
-        closeBoardAlertPopup()
-        if (after_cancel){
-            after_cancel()
-        }
-        return
-    }
-
-    if (cancel_popup_mode_g === 'join'){
-        const after_cancel = pending_after_search_cancel_g
-        pending_after_search_cancel_g = null
-        cancel_popup_mode_g = 'game'
-        cancelJoinRequest()
-        closeBoardAlertPopup()
-        if (after_cancel){
-            after_cancel()
-        }
-        return
-    }
-
     cancelCurrentGame()
+    closeBoardAlertPopup()
+})
+
+board_alert_cancel_search_btn.addEventListener('click', () => {
+    cancelRandomSearch()
+    closeBoardAlertPopup()
+})
+
+board_alert_cancel_join_btn.addEventListener('click', () => {
+    cancelJoinRequest()
+    hideElements([join_game_options])
     closeBoardAlertPopup()
 })
 
@@ -897,6 +835,41 @@ socket.on('gameOverByDeadPosition', () => {
 
 
 // GAME:
+
+function playAiMoveFromStockfish(ai_turn_payload){
+    if (is_ai_thinking_g){
+        return
+    }
+
+    is_ai_thinking_g = true
+
+    try {
+        const fen = boardToFen(ai_turn_payload.board, ai_turn_payload.current_turn)
+        const skill_level = getSkillLevelFromDifficulty(ai_turn_payload.difficulty)
+        const move_time_ms = getMoveTimeFromDifficulty(ai_turn_payload.difficulty)
+
+        getBestMoveFromStockfish(fen, skill_level, move_time_ms).then((uci_move) => {
+            if (!uci_move || (uci_move === '(none)')){
+                is_ai_thinking_g = false
+                return
+            }
+
+            const { from_cell, to_cell, promotion_type } = uciMoveToCellsAndPromotion(uci_move)
+            socket.emit('aiMoveMade', [from_cell, to_cell, promotion_type])
+            is_ai_thinking_g = false
+        }).catch((error) => {
+            console.log('Stockfish AI error:', error)
+            is_ai_thinking_g = false
+        })
+    } catch (error) {
+        console.log('Stockfish AI setup error:', error)
+        is_ai_thinking_g = false
+    }
+}
+
+socket.on('aiTurnToMove', (ai_turn_payload) => {
+    playAiMoveFromStockfish(ai_turn_payload)
+})
 
 function multiplyStringNumberBy10(num_string_1){
     let num_string_2
@@ -1098,7 +1071,7 @@ board_alert_promotion_btns.addEventListener('click', (event) => {
     const type = possible_types[elem_id]
     if (type){
         socket.emit('pawnPromotionTypeChosen', type)
-        board_alert_close_btn.classList.remove('hidden')
+        showElements([board_alert_close_btn])
         closeBoardAlertPopup()
     }
 })

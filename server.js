@@ -87,15 +87,12 @@ io.on('connection', socket => {
         stopGame('opponentLoggedOut')
         if (player_g){
             players_db.removeAwaitingPlayerIfIsCurrentPlayer(player_g.id)
-            const pending_host_username = players_db.clearPendingJoin(player_g.id)
-            if (pending_host_username){
-                const host_id = players_db.getPlayerIdFromUsername(pending_host_username)
-                if (host_id){
-                    const host = players_db.getPlayer(host_id)
-                    if (host?.current_socket_id){
-                        io.to(host.current_socket_id).emit('joinRequestCancelled', player_g.username)
-                    }
+            if (player_g.pending_join_id){
+                const host = players_db.getPlayer(player_g.pending_join_id)
+                if (host?.current_socket_id){
+                    io.to(host.current_socket_id).emit('joinRequestCancelled', player_g.username)
                 }
+                player_g.pending_join_id = null
             }
             players_db.deletePlayer(player_g.id) // temporary, should be log out
         }
@@ -200,6 +197,13 @@ io.on('connection', socket => {
         if (player_g.active_game_id){
             socket.emit('askIfCancelCurrentGame')
         } else {
+            if (player_g.pending_join_id){
+                const host = players_db.getPlayer(player_g.pending_join_id)
+                if (host?.current_socket_id){
+                    io.to(host.current_socket_id).emit('joinRequestCancelled', player_g.username)
+                }
+                player_g.pending_join_id = null
+            }
             games_db.createGame(player_g.id)
             game_g = games_db.getGame(player_g.id)
             players_db.linkPlayerToGame(player_g.id, game_g.id, validated_color)
@@ -231,6 +235,13 @@ io.on('connection', socket => {
         if (player_g.active_game_id){
             socket.emit('askIfCancelCurrentGame')
         } else {
+            if (player_g.pending_join_id){
+                const host = players_db.getPlayer(player_g.pending_join_id)
+                if (host?.current_socket_id){
+                    io.to(host.current_socket_id).emit('joinRequestCancelled', player_g.username)
+                }
+                player_g.pending_join_id = null
+            }
             let player_color = validated_color
             if (player_color === 'random'){
                 player_color = (Math.random() < 0.5) ? 'white' : 'black'
@@ -290,17 +301,13 @@ io.on('connection', socket => {
                 } else if (player_g.active_game_id){
                     socket.emit('askIfCancelCurrentGame')
                 } else {
-                    const previous_host_username = players_db.clearPendingJoin(player_g.id)
-                    if (previous_host_username && (previous_host_username !== validated_opponent_username)){
-                        const previous_host_id = players_db.getPlayerIdFromUsername(previous_host_username)
-                        if (previous_host_id){
-                            const previous_host = players_db.getPlayer(previous_host_id)
-                            if (previous_host?.current_socket_id){
-                                io.to(previous_host.current_socket_id).emit('joinRequestCancelled', player_g.username)
-                            }
+                    if (player_g.pending_join_id && (player_g.pending_join_id !== possible_opponent.id)){
+                        const previous_host = players_db.getPlayer(player_g.pending_join_id)
+                        if (previous_host?.current_socket_id){
+                            io.to(previous_host.current_socket_id).emit('joinRequestCancelled', player_g.username)
                         }
                     }
-                    players_db.setPendingJoin(player_g.id, validated_opponent_username)
+                    player_g.pending_join_id = possible_opponent.id
                     io.to(possible_opponent.current_socket_id).emit('joinGameRequest', player_g.username)
                 }
             }
@@ -322,16 +329,12 @@ io.on('connection', socket => {
 
         const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
         const possible_opponent = players_db.getPlayer(possible_opponent_id)
-        if (!possible_opponent){
-            return
-        }
-
-        if (players_db.getPendingJoin(possible_opponent.id) !== player_g.username){
+        if (!possible_opponent || (possible_opponent.pending_join_id !== player_g.id)){
             return
         }
 
         if (player_g.active_game_id && !player_g.active_opponent && !possible_opponent.active_game_id && !game_g.is_ai_game){
-            players_db.clearPendingJoin(possible_opponent.id)
+            possible_opponent.pending_join_id = null
             const opponent_color = (player_g.active_color === 'white') ? 'black' : 'white'
             players_db.linkPlayerToGame(possible_opponent.id, game_g.id, opponent_color)
             players_db.linkPlayersTogether(player_g.id, possible_opponent.id)
@@ -352,8 +355,8 @@ io.on('connection', socket => {
 
         const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
         if (possible_opponent_id){
-            players_db.clearPendingJoin(possible_opponent_id)
             const possible_opponent = players_db.getPlayer(possible_opponent_id)
+            possible_opponent.pending_join_id = null
 
             const error = "Join request was denied by player"
             io.to(possible_opponent.current_socket_id).emit('joinGameError', error)
@@ -361,21 +364,12 @@ io.on('connection', socket => {
     })
 
     socket.on('cancelJoinRequest', () => {
-        if (!player_g){
+        if (!player_g || !player_g.pending_join_id){
             return
         }
 
-        const host_username = players_db.clearPendingJoin(player_g.id)
-        if (!host_username){
-            return
-        }
-
-        const host_id = players_db.getPlayerIdFromUsername(host_username)
-        if (!host_id){
-            return
-        }
-
-        const host = players_db.getPlayer(host_id)
+        const host = players_db.getPlayer(player_g.pending_join_id)
+        player_g.pending_join_id = null
         if (host?.current_socket_id){
             io.to(host.current_socket_id).emit('joinRequestCancelled', player_g.username)
         }
