@@ -123,7 +123,7 @@ function hideAllToggleElementsExceptEspecified(elem_kept){
     const elem_kept_id = elem_kept.id
     for (let elem of sidebar_toggle_elements){
         if (elem.id !== elem_kept_id){
-            elems_to_hide.push([elem])
+            hideElements([elem])
         }
     }
 }
