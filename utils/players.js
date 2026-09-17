@@ -1,6 +1,7 @@
 
 const active_players = {}
 let awaiting_player_id = null
+let pending_join_by_player_id = {}
 
 class Player {
     constructor(id, username, password, current_socket_id) {
@@ -51,6 +52,20 @@ function removeAwaitingPlayerIfIsCurrentPlayer(current_player_id){
     if (awaiting_player_id === current_player_id){
         awaiting_player_id = null
     }
+}
+
+function setPendingJoin(joiner_id, host_username){
+    pending_join_by_player_id[joiner_id] = host_username
+}
+
+function getPendingJoin(joiner_id){
+    return pending_join_by_player_id[joiner_id] || null
+}
+
+function clearPendingJoin(joiner_id){
+    const host_username = pending_join_by_player_id[joiner_id] || null
+    delete pending_join_by_player_id[joiner_id]
+    return host_username
 }
 
 function isUsernameAvailable(username){
@@ -123,6 +138,9 @@ module.exports = {
     getPlayer,
     getAwaitingPlayerIdOrQueueCurrentPlayer,
     removeAwaitingPlayerIfIsCurrentPlayer,
+    setPendingJoin,
+    getPendingJoin,
+    clearPendingJoin,
     isUsernameAvailable,
     createPlayer,
     deletePlayer,

@@ -8,6 +8,11 @@ let player_color_g = null
 let move_counter_g = 1
 let is_ai_game_g = false
 let is_ai_thinking_g = false
+let is_in_active_game_g = false
+let is_seeking_random_g = false
+let is_waiting_join_g = false
+let cancel_popup_mode_g = 'game'
+let pending_after_search_cancel_g = null
 
 // syntactic sugar
 function getElement(selectors){
@@ -63,18 +68,23 @@ const join_game_options = getElement('#join-game-options')
 const join_game_input = getElement('#join-game-input')
 const join_game_input_alert = getElement('#join-game-input-alert')
 const join_game_input_btn = getElement('#join-game-input-btn')
+const join_game_cancel_btn = getElement('#join-game-cancel-btn')
 const random_opponent_btn = getElement('#random-opponent-btn')
 const random_opponent_options = getElement('#random-opponent-options')
 const random_opponent_alert = getElement('#random-opponent-alert')
+const random_opponent_cancel_btn = getElement('#random-opponent-cancel-btn')
 const resign_btn = getElement('#resign-btn')
 const draw_btn = getElement('#draw-btn')
 const ai_game_btn = getElement('#ai-game-btn')
 const ai_game_options = getElement('#ai-game-options')
+const exit_game_btn = getElement('#exit-game-btn')
 const slide_from_left = document.querySelectorAll('.slide-left')
 const slide_from_right = document.querySelectorAll('.slide-right')
 
 const logged_out_elements = [quick_game_btn]
 const logged_in_elements = [log_out_btn, new_game_btn, join_game_btn, random_opponent_btn, ai_game_btn]
+const out_of_game_menu_elements = [log_out_btn, new_game_btn, join_game_btn, random_opponent_btn, ai_game_btn]
+const in_game_menu_elements = [exit_game_btn]
 const sidebar_toggle_elements = [quick_game_options, new_game_options, join_game_options, log_out_options, random_opponent_options, ai_game_options, quick_game_input_alert, join_game_input_alert]
 
 
@@ -113,14 +123,27 @@ function toggleHideOrShow(elem){
 function hideAllToggleElementsExceptEspecified(elem_kept){
     const elem_kept_id = elem_kept.id
     for (let elem of sidebar_toggle_elements){
-        if (elem.id !== elem_kept_id){
-            elem.classList.add('hidden')
+        if (elem.id === elem_kept_id){
+            continue
         }
+        if (is_seeking_random_g && (elem === random_opponent_options)){
+            continue
+        }
+        if (is_waiting_join_g && ((elem === join_game_options) || (elem === join_game_input_alert))){
+            continue
+        }
+        elem.classList.add('hidden')
     }
 }
 
 function hideAllToggleElements(){
     for (let elem of sidebar_toggle_elements){
+        if (is_seeking_random_g && (elem === random_opponent_options)){
+            continue
+        }
+        if (is_waiting_join_g && ((elem === join_game_options) || (elem === join_game_input_alert))){
+            continue
+        }
         elem.classList.add('hidden')
     }
 }
@@ -130,13 +153,32 @@ function updateLeftSidebarToLogIn(username){
     toggleHideOrShow(quick_game_options)
     hideElements(logged_out_elements)
     showElements(logged_in_elements)
+    hideElements(in_game_menu_elements)
+    is_in_active_game_g = false
 }
 
 function updateLeftSidebarToLogOut(){
     user_data.textContent = " "
     toggleHideOrShow(log_out_options)
     hideElements(logged_in_elements)
+    hideElements(in_game_menu_elements)
     showElements(logged_out_elements)
+    is_in_active_game_g = false
+    clearRandomSearchUi()
+    clearJoinWaitUi()
+}
+
+function updateSidebarForActiveGame(){
+    is_in_active_game_g = true
+    hideElements(out_of_game_menu_elements)
+    hideAllToggleElements()
+    showElements(in_game_menu_elements)
+}
+
+function updateSidebarForNoActiveGame(){
+    is_in_active_game_g = false
+    hideElements(in_game_menu_elements)
+    showElements(out_of_game_menu_elements)
 }
 
 function updateDrawButtonVisibility(){
@@ -149,24 +191,136 @@ function updateDrawButtonVisibility(){
     }
 }
 
+function clearRandomSearchUi(){
+    is_seeking_random_g = false
+    closeRandomOpponentAlert()
+    random_opponent_cancel_btn.classList.add('hidden')
+}
+
+function startRandomSearch(){
+    is_seeking_random_g = true
+    openRandomOpponentAlert("Finding opponent...")
+    random_opponent_cancel_btn.classList.remove('hidden')
+    hideAllToggleElementsExceptEspecified(random_opponent_options)
+    socket.emit('randomGame', generateRandomColor())
+}
+
+function cancelRandomSearch(){
+    socket.emit('cancelRandomSearch')
+    clearRandomSearchUi()
+}
+
+function clearJoinWaitUi(){
+    is_waiting_join_g = false
+    join_game_cancel_btn.classList.add('hidden')
+}
+
+function startJoinWait(opponents_username){
+    is_waiting_join_g = true
+    openJoinGameAlert("Waiting for player to respond...")
+    join_game_cancel_btn.classList.remove('hidden')
+    join_game_options.classList.remove('hidden')
+    hideAllToggleElementsExceptEspecified(join_game_options)
+    socket.emit('joinGame', opponents_username)
+}
+
+function cancelJoinRequest(){
+    socket.emit('cancelJoinRequest')
+    clearJoinWaitUi()
+    closeJoinGameAlert()
+}
+
+function openCancelGamePopup(){
+    cancel_popup_mode_g = 'game'
+    pending_after_search_cancel_g = null
+    board_alert_cancel_btn.textContent = 'CANCEL GAME'
+    openBoardAlertPopup('Cancel current game?', 'This action will cancel the current game.', 'cancel')
+}
+
+function openCancelSearchPopup(after_cancel = null){
+    cancel_popup_mode_g = 'search'
+    pending_after_search_cancel_g = after_cancel
+    board_alert_cancel_btn.textContent = 'CANCEL SEARCH'
+    openBoardAlertPopup('Cancel search?', 'This will stop looking for a random opponent.', 'cancel')
+}
+
+function openCancelJoinPopup(after_cancel = null){
+    cancel_popup_mode_g = 'join'
+    pending_after_search_cancel_g = after_cancel
+    board_alert_cancel_btn.textContent = 'CANCEL REQUEST'
+    openBoardAlertPopup('Cancel join request?', 'This will withdraw your request to join the game.', 'cancel')
+}
+
+function runOrAskToCancelPending(action){
+    if (is_seeking_random_g){
+        openCancelSearchPopup(action)
+        return
+    }
+    if (is_waiting_join_g){
+        openCancelJoinPopup(action)
+        return
+    }
+    action()
+}
+
 quick_game_btn.addEventListener('click', () => {
     toggleHideOrShow(quick_game_options)
     hideAllToggleElementsExceptEspecified(quick_game_options)
 })
 
 log_out_btn.addEventListener('click', () => {
-    toggleHideOrShow(log_out_options)
-    hideAllToggleElementsExceptEspecified(log_out_options)
+    runOrAskToCancelPending(() => {
+        toggleHideOrShow(log_out_options)
+        hideAllToggleElementsExceptEspecified(log_out_options)
+    })
 })
 
 new_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(new_game_options)
-    hideAllToggleElementsExceptEspecified(new_game_options)
+    runOrAskToCancelPending(() => {
+        toggleHideOrShow(new_game_options)
+        hideAllToggleElementsExceptEspecified(new_game_options)
+    })
 })
 
 join_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(join_game_options)
-    hideAllToggleElementsExceptEspecified(join_game_options)
+    if (is_waiting_join_g){
+        cancelJoinRequest()
+        join_game_options.classList.add('hidden')
+        return
+    }
+    runOrAskToCancelPending(() => {
+        toggleHideOrShow(join_game_options)
+        hideAllToggleElementsExceptEspecified(join_game_options)
+    })
+})
+
+ai_game_btn.addEventListener('click', () => {
+    runOrAskToCancelPending(() => {
+        toggleHideOrShow(ai_game_options)
+        hideAllToggleElementsExceptEspecified(ai_game_options)
+    })
+})
+
+exit_game_btn.addEventListener('click', () => {
+    openCancelGamePopup()
+})
+
+random_opponent_btn.addEventListener('click', () => {
+    if (is_seeking_random_g){
+        cancelRandomSearch()
+        return
+    }
+    runOrAskToCancelPending(() => {
+        startRandomSearch()
+    })
+})
+
+random_opponent_cancel_btn.addEventListener('click', () => {
+    cancelRandomSearch()
+})
+
+join_game_cancel_btn.addEventListener('click', () => {
+    cancelJoinRequest()
 })
 
 
@@ -211,6 +365,7 @@ function closeBoardAlertPopup(){
     board_alert_confirm_resign_btn.classList.add('hidden')
     board_alert_accept_draw_btn.classList.add('hidden')
     board_alert_deny_draw_btn.classList.add('hidden')
+    board_alert_cancel_btn.textContent = 'CANCEL GAME'
 }
 
 function openQuickGameAlert(message){
@@ -390,7 +545,7 @@ socket.on('logOutSuccessful', () => { // temporarily on playerDeleted
     player_name.textContent = ""
     player_info.classList.add('hidden')
 
-    const title = "Successfully logged out."
+    const title = "Username cleared."
     const text = "To play again, press Log-in in the left menu: pick a username or press Random Name for an automated one."
     openBoardAlertPopup(title, text)
 })
@@ -407,10 +562,13 @@ new_game_options.addEventListener('click', (event) => {
 
 socket.on('newGameCreated', ([board, player_color]) => {
     clearGameData()
+    clearRandomSearchUi()
+    clearJoinWaitUi()
     createBoard(board, player_color)
     player_color_g = player_color
     is_ai_game_g = false
     updateDrawButtonVisibility()
+    updateSidebarForActiveGame()
 
     const title = "New game created!"
     const text = "Ask a friend to Join your game by using your Username or click on 'Join Random Game' to be matched with a random player."
@@ -421,12 +579,18 @@ socket.on('newGameCreated', ([board, player_color]) => {
 join_game_input_btn.addEventListener('click', () => {
     const opponents_username = join_game_input.value
     
-    if (validateUsername(opponents_username)){
-        openJoinGameAlert("Waiting for player to respond...")
-        socket.emit('joinGame', opponents_username) // server also has socket.id
-    } else {
+    if (!validateUsername(opponents_username)){
         openJoinGameAlert("Please place a valid username between 6 and 18 characters long")
+        return
     }
+
+    if (is_waiting_join_g){
+        return
+    }
+
+    runOrAskToCancelPending(() => {
+        startJoinWait(opponents_username)
+    })
 })
 
 socket.on('joinGameRequest', (opponent_username) => {
@@ -435,6 +599,13 @@ socket.on('joinGameRequest', (opponent_username) => {
     const title = "Join Request"
     const text = `Player ${opponent_username} would like to join your game; would you like to accept?`
     openBoardAlertPopup(title, text, 'join')
+})
+
+socket.on('joinRequestCancelled', (opponent_username) => {
+    if (requesting_opponent_g === opponent_username){
+        requesting_opponent_g = null
+        closeBoardAlertPopup()
+    }
 })
 
 function confirmJoinRequest(){
@@ -458,8 +629,9 @@ board_alert_ignore_btn.addEventListener('click', () => {
 socket.on('newGameJoined', ([board, player_color]) => {
     clearGameData()
     createBoard(board, player_color)
+    clearJoinWaitUi()
     closeJoinGameAlert()
-    closeRandomOpponentAlert()
+    clearRandomSearchUi()
     player_color_g = player_color
 
     const title = "Joined new game!"
@@ -473,23 +645,17 @@ socket.on('joinGameSuccessful', (opponent_username, is_ai_game = false) => {
     opponent_info.classList.remove('hidden')
     is_ai_game_g = is_ai_game
     updateDrawButtonVisibility()
+    updateSidebarForActiveGame()
+    clearRandomSearchUi()
+    clearJoinWaitUi()
+    closeJoinGameAlert()
     socket.emit('cacheOpponentAndGame')
     hideAllToggleElements()
 })
 
 socket.on('joinGameError', (error) => {
+    clearJoinWaitUi()
     openJoinGameAlert(error)
-})
-
-random_opponent_btn.addEventListener('click', () => {
-    const color = generateRandomColor()
-    openRandomOpponentAlert("Finding opponent...")
-    socket.emit('randomGame', color)
-})
-
-ai_game_btn.addEventListener('click', () => {
-    toggleHideOrShow(ai_game_options)
-    hideAllToggleElementsExceptEspecified(ai_game_options)
 })
 
 ai_game_options.addEventListener('click', (event) => {
@@ -550,6 +716,13 @@ socket.on('aiTurnToMove', (ai_turn_payload) => {
 function cancelCurrentGame(){
     socket.emit('confirmCancel')
     clearGameData()
+    player_color_g = null
+    requesting_opponent_g = null
+    move_counter_g = 1
+    is_ai_game_g = false
+    is_ai_thinking_g = false
+    updateDrawButtonVisibility()
+    updateSidebarForNoActiveGame()
 }
 
 socket.on('clearCache', () => {
@@ -559,6 +732,7 @@ socket.on('clearCache', () => {
     is_ai_game_g = false
     is_ai_thinking_g = false
     updateDrawButtonVisibility()
+    updateSidebarForNoActiveGame()
     socket.emit('clearCacheOfOpponentAndGame')
 })
 
@@ -566,17 +740,41 @@ board_alert_close_btn.addEventListener('click', () => {
     if (board_alert_title.textContent === "Join Request"){
         ignoreJoinRequest()
     } else {
+        pending_after_search_cancel_g = null
+        cancel_popup_mode_g = 'game'
         closeBoardAlertPopup()
     }
 })
 
 socket.on('askIfCancelCurrentGame', () => {
-    const title = "Cancel current game?"
-    const text = "This action will cancel the current game."
-    openBoardAlertPopup(title, text, 'cancel')
+    openCancelGamePopup()
 })
 
 board_alert_cancel_btn.addEventListener('click', () => {
+    if (cancel_popup_mode_g === 'search'){
+        const after_cancel = pending_after_search_cancel_g
+        pending_after_search_cancel_g = null
+        cancel_popup_mode_g = 'game'
+        cancelRandomSearch()
+        closeBoardAlertPopup()
+        if (after_cancel){
+            after_cancel()
+        }
+        return
+    }
+
+    if (cancel_popup_mode_g === 'join'){
+        const after_cancel = pending_after_search_cancel_g
+        pending_after_search_cancel_g = null
+        cancel_popup_mode_g = 'game'
+        cancelJoinRequest()
+        closeBoardAlertPopup()
+        if (after_cancel){
+            after_cancel()
+        }
+        return
+    }
+
     cancelCurrentGame()
     closeBoardAlertPopup()
 })
