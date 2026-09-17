@@ -90,6 +90,14 @@
                 <div id="random-opponent-options" class="hidden options">
                     <div id="random-opponent-alert" class="alert"></div>
                 </div>
+                <div id="ai-game-btn" class="sidebar-highlight hidden">
+                    Play vs Computer
+                </div>
+                <div id="ai-game-options" class="hidden options">
+                    <button id="ai-game-easy-btn" class="btn">Easy</button>
+                    <button id="ai-game-medium-btn" class="btn">Medium</button>
+                    <button id="ai-game-hard-btn" class="btn">Hard</button>
+                </div>
             </aside>
             <div id="board-container"  class="slide-left">
                 <div id="opponent-info" class="game-info hidden">
@@ -187,5 +195,7 @@
         </footer>
     </body>
     <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="/js/stockfish-translator.js"></script>
+    <script type="text/javascript" src="/js/stockfish-engine.js"></script>
     <script type="text/javascript" src="/js/game-client.js"></script>
 </html>

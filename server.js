@@ -65,14 +65,19 @@ io.on('connection', socket => {
     }
 
     function stopGame(message_event){
+        const was_ai_game = game_g?.is_ai_game
         if (game_g){
             games_db.deleteGame(game_g.id)
         }
         game_g = null
         if (opponent_g){
             players_db.unlinkPlayerToGame(opponent_g.id)
-            io.to(opponent_g.current_socket_id).emit(message_event)
-            io.to(opponent_g.current_socket_id).emit('clearCache')
+            if (message_event){
+                io.to(opponent_g.current_socket_id).emit(message_event)
+                io.to(opponent_g.current_socket_id).emit('clearCache')
+            }
+        } else if (was_ai_game){
+            socket.emit('clearCache')
         }
         opponent_g = null
         if (player_g){
@@ -89,16 +94,44 @@ io.on('connection', socket => {
         player_g = null
     }
 
-    function checkAndEmitGameOver(){
+    function validatedDifficulty(difficulty){
+        const regex = /^(easy|medium|hard)$/
+        return validatedStringData(difficulty, regex)
+    }
+
+    function getAiTurnPayload(game){
+        return {
+            board: game.board,
+            current_turn: game.current_turn,
+            difficulty: game.ai_difficulty
+        }
+    }
+
+    function requestAiMoveIfNeeded(){
+        if (game_g && game_g.is_ai_game && (game_g.current_turn === game_g.ai_color)){
+            socket.emit('aiTurnToMove', getAiTurnPayload(game_g))
+        }
+    }
+
+    function checkAndEmitGameOver(moved_color){
         if (!player_g || !game_g){
             return
         }
 
-        const game_over_state = game_engine.getGameOverState(game_g, player_g.active_color)
+        if (!moved_color){
+            moved_color = player_g.active_color
+        }
+
+        const game_over_state = game_engine.getGameOverState(game_g, moved_color)
 
         if (game_over_state === 'checkmate'){
-            socket.emit('gameOverByCheckmateWon')
-            stopGame('gameOverByCheckmateLost')
+            if (moved_color === player_g.active_color){
+                socket.emit('gameOverByCheckmateWon')
+                stopGame('gameOverByCheckmateLost')
+            } else {
+                socket.emit('gameOverByCheckmateLost')
+                stopGame(null)
+            }
 
         } else if (game_over_state === 'stalemate'){
             socket.emit('gameOverByStalemate')
@@ -168,6 +201,48 @@ io.on('connection', socket => {
         }
     })
 
+    socket.on('createAiGame', ([color, difficulty]) => {
+        const validated_color = validatedColor(color)
+        if (validated_color === false){
+            const error = "Error creating AI game: color may only be white, black or random"
+            socket.emit('consoleLogError', error)
+            return
+        }
+
+        const validated_difficulty = validatedDifficulty(difficulty)
+        if (validated_difficulty === false){
+            const error = "Error creating AI game: difficulty may only be easy, medium or hard"
+            socket.emit('consoleLogError', error)
+            return
+        }
+        
+        if (!player_g){
+            return
+        }
+
+        if (player_g.active_game_id){
+            socket.emit('askIfCancelCurrentGame')
+        } else {
+            let player_color = validated_color
+            if (player_color === 'random'){
+                player_color = (Math.random() < 0.5) ? 'white' : 'black'
+            }
+
+            games_db.createGame(player_g.id)
+            game_g = games_db.getGame(player_g.id)
+            game_g.is_ai_game = true
+            game_g.ai_difficulty = validated_difficulty
+            game_g.ai_color = (player_color === 'white') ? 'black' : 'white'
+
+            players_db.linkPlayerToGame(player_g.id, game_g.id, player_color)
+            players_db.removeAwaitingPlayerIfIsCurrentPlayer(player_g.id)
+
+            socket.emit('newGameJoined', [game_g.board, player_color])
+            socket.emit('joinGameSuccessful', 'Computer', true)
+            requestAiMoveIfNeeded()
+        }
+    })
+
     socket.on('joinGame', (opponent_username) => {
         const validated_opponent_username = validatedUsername(opponent_username)
         if (validated_opponent_username === false){
@@ -200,7 +275,11 @@ io.on('connection', socket => {
                 socket.emit('joinGameError', error)
 
             } else {
-                if (player_g.active_game_id){
+                const possible_opponent_game = games_db.getGame(possible_opponent.active_game_id)
+                if (possible_opponent_game?.is_ai_game){
+                    const error = `${validated_opponent_username} is already in an active game`
+                    socket.emit('joinGameError', error)
+                } else if (player_g.active_game_id){
                     socket.emit('askIfCancelCurrentGame')
                 } else {
                     io.to(possible_opponent.current_socket_id).emit('joinGameRequest', player_g.username)
@@ -224,7 +303,7 @@ io.on('connection', socket => {
 
         const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
         const possible_opponent = players_db.getPlayer(possible_opponent_id)
-        if (player_g.active_game_id && !player_g.active_opponent && !possible_opponent.active_game_id){
+        if (player_g.active_game_id && !player_g.active_opponent && !possible_opponent.active_game_id && !game_g.is_ai_game){
             const opponent_color = (player_g.active_color === 'white') ? 'black' : 'white'
             players_db.linkPlayerToGame(possible_opponent.id, game_g.id, opponent_color)
             players_db.linkPlayersTogether(player_g.id, possible_opponent.id)
@@ -305,7 +384,10 @@ io.on('connection', socket => {
     })
 
     socket.on('resign', () => {
-        if (!player_g || !game_g || !opponent_g || !player_g.active_game_id){
+        if (!player_g || !game_g || !player_g.active_game_id){
+            return
+        }
+        if (!opponent_g && !game_g.is_ai_game){
             return
         }
         stopGame('opponentResigned')
@@ -337,7 +419,13 @@ io.on('connection', socket => {
             return
         }
 
-        if (!player_g || !game_g || !opponent_g || !player_g.active_game_id){
+        if (!player_g || !game_g || !player_g.active_game_id){
+            return
+        }
+        if (!opponent_g && !game_g.is_ai_game){
+            return
+        }
+        if (game_g.is_ai_game && (game_g.current_turn !== player_g.active_color)){
             return
         }
 
@@ -360,23 +448,106 @@ io.on('connection', socket => {
 
             } else if (action === 'deactivateBoard'){
                 const deactivate_opponent = instruction.params
-                if (deactivate_opponent){
+                if (deactivate_opponent && opponent_g){
                     io.to(opponent_g.current_socket_id).emit('deactivateBoard')
                 }
                 socket.emit('deactivateBoard')
 
             } else if (action === 'movePiece'){
                 const new_play = instruction.params
-                io.to(opponent_g.current_socket_id).emit('movePiece', [new_play, opponent_g.active_color])
+                if (opponent_g){
+                    io.to(opponent_g.current_socket_id).emit('movePiece', [new_play, opponent_g.active_color])
+                }
                 socket.emit('movePiece', [new_play, player_g.active_color])
 
             } else if (action === 'checkIfGameOver'){
-                checkAndEmitGameOver()
+                checkAndEmitGameOver(player_g.active_color)
 
             } else {
                 console.log('Error evaluating actions from game-engine on server')
             }
         }
+
+        requestAiMoveIfNeeded()
+    })
+
+    socket.on('aiMoveMade', ([from_cell, to_cell, promotion_type]) => {
+        const validated_from_cell = validatedCell(from_cell)
+        const validated_to_cell = validatedCell(to_cell)
+        if ((validated_from_cell === false) || (validated_to_cell === false) || (validated_from_cell === null) || (validated_to_cell === null)){
+            const error = 'Validation error: invalid AI move cells'
+            socket.emit('consoleLogError', error)
+            return
+        }
+
+        let validated_promotion_type = null
+        if (promotion_type){
+            validated_promotion_type = validatedPromotionType(promotion_type)
+            if (validated_promotion_type === false){
+                const error = 'Validation error: invalid AI promotion type'
+                socket.emit('consoleLogError', error)
+                return
+            }
+        }
+
+        if (!player_g || !game_g || !game_g.is_ai_game || !player_g.active_game_id){
+            return
+        }
+        if (game_g.current_turn !== game_g.ai_color){
+            return
+        }
+
+        const ai_color = game_g.ai_color
+        const select_instructions = game_engine.getInstructionsForSelection(validated_from_cell, game_g, ai_color)
+        for (let instruction of select_instructions){
+            if (instruction.action === 'updateSelection'){
+                const { new_active_moves, new_last_selected_cell } = instruction.params
+                games_db.updateGameSelection(game_g.id, ai_color, new_active_moves, new_last_selected_cell)
+            }
+        }
+
+        if (!game_g[ai_color].last_selected_cell){
+            return
+        }
+
+        const move_instructions = game_engine.getInstructionsForSelection(validated_to_cell, game_g, ai_color)
+        let move_was_made = false
+        for (let instruction of move_instructions){
+            const action = instruction.action
+
+            if (action === 'updateSelection'){
+                const { new_active_moves, new_last_selected_cell } = instruction.params
+                games_db.updateGameSelection(game_g.id, ai_color, new_active_moves, new_last_selected_cell)
+
+            } else if (action === 'updateMove'){
+                const { new_play, new_board } = instruction.params
+                games_db.updateGameMove(game_g.id, ai_color, new_play, new_board)
+
+            } else if (action === 'deactivateBoard'){
+                socket.emit('deactivateBoard')
+
+            } else if (action === 'movePiece'){
+                const new_play = instruction.params
+                socket.emit('movePiece', [new_play, player_g.active_color])
+                move_was_made = true
+            }
+        }
+
+        if (!move_was_made){
+            games_db.updateGameSelection(game_g.id, ai_color, [], null)
+            return
+        }
+
+        if (game_g[ai_color].promotion_cell){
+            if (!validated_promotion_type){
+                validated_promotion_type = 'queen'
+            }
+            const unpromoted_pawn = games_db.getPawnEligibleForPromotion(game_g.id, ai_color)
+            const promoted_pawn = games_db.promotePawnAndReturnIt(game_g.id, ai_color, validated_promotion_type)
+            socket.emit('promotePawn', [unpromoted_pawn, promoted_pawn])
+        }
+
+        checkAndEmitGameOver(ai_color)
     })
 
     socket.on('pawnPromotionTypeChosen', (type) => {
@@ -399,7 +570,8 @@ io.on('connection', socket => {
             io.to(opponent_g.current_socket_id).emit('promotePawn', [unpromoted_pawn, promoted_pawn])
         }
 
-        checkAndEmitGameOver()
+        checkAndEmitGameOver(player_g.active_color)
+        requestAiMoveIfNeeded()
     })
 
     socket.on('disconnect', () => {

@@ -6,6 +6,8 @@ const socket = io();
 let requesting_opponent_g = null
 let player_color_g = null
 let move_counter_g = 1
+let is_ai_game_g = false
+let is_ai_thinking_g = false
 
 // syntactic sugar
 function getElement(selectors){
@@ -66,12 +68,14 @@ const random_opponent_options = getElement('#random-opponent-options')
 const random_opponent_alert = getElement('#random-opponent-alert')
 const resign_btn = getElement('#resign-btn')
 const draw_btn = getElement('#draw-btn')
+const ai_game_btn = getElement('#ai-game-btn')
+const ai_game_options = getElement('#ai-game-options')
 const slide_from_left = document.querySelectorAll('.slide-left')
 const slide_from_right = document.querySelectorAll('.slide-right')
 
 const logged_out_elements = [quick_game_btn]
-const logged_in_elements = [log_out_btn, new_game_btn, join_game_btn, random_opponent_btn]
-const sidebar_toggle_elements = [quick_game_options, new_game_options, join_game_options, log_out_options, random_opponent_options, quick_game_input_alert, join_game_input_alert]
+const logged_in_elements = [log_out_btn, new_game_btn, join_game_btn, random_opponent_btn, ai_game_btn]
+const sidebar_toggle_elements = [quick_game_options, new_game_options, join_game_options, log_out_options, random_opponent_options, ai_game_options, quick_game_input_alert, join_game_input_alert]
 
 
 
@@ -133,6 +137,16 @@ function updateLeftSidebarToLogOut(){
     toggleHideOrShow(log_out_options)
     hideElements(logged_in_elements)
     showElements(logged_out_elements)
+}
+
+function updateDrawButtonVisibility(){
+    if (is_ai_game_g){
+        draw_btn.classList.add('hidden')
+        draw_btn.parentElement.classList.add('hidden')
+    } else {
+        draw_btn.classList.remove('hidden')
+        draw_btn.parentElement.classList.remove('hidden')
+    }
 }
 
 quick_game_btn.addEventListener('click', () => {
@@ -395,6 +409,8 @@ socket.on('newGameCreated', ([board, player_color]) => {
     clearGameData()
     createBoard(board, player_color)
     player_color_g = player_color
+    is_ai_game_g = false
+    updateDrawButtonVisibility()
 
     const title = "New game created!"
     const text = "Ask a friend to Join your game by using your Username or click on 'Join Random Game' to be matched with a random player."
@@ -452,9 +468,11 @@ socket.on('newGameJoined', ([board, player_color]) => {
 })
 
 // gets sent to both players
-socket.on('joinGameSuccessful', (opponent_username) => {
+socket.on('joinGameSuccessful', (opponent_username, is_ai_game = false) => {
     opponent_name.textContent = opponent_username
     opponent_info.classList.remove('hidden')
+    is_ai_game_g = is_ai_game
+    updateDrawButtonVisibility()
     socket.emit('cacheOpponentAndGame')
     hideAllToggleElements()
 })
@@ -467,6 +485,61 @@ random_opponent_btn.addEventListener('click', () => {
     const color = generateRandomColor()
     openRandomOpponentAlert("Finding opponent...")
     socket.emit('randomGame', color)
+})
+
+ai_game_btn.addEventListener('click', () => {
+    toggleHideOrShow(ai_game_options)
+    hideAllToggleElementsExceptEspecified(ai_game_options)
+})
+
+ai_game_options.addEventListener('click', (event) => {
+    const elem_id = event.target.id
+    const possible_difficulties = {
+        'ai-game-easy-btn': 'easy',
+        'ai-game-medium-btn': 'medium',
+        'ai-game-hard-btn': 'hard'
+    }
+    const difficulty = possible_difficulties[elem_id]
+    if (difficulty){
+        const color = generateRandomColor()
+        socket.emit('createAiGame', [color, difficulty])
+        hideAllToggleElements()
+    }
+})
+
+function playAiMoveFromStockfish(ai_turn_payload){
+    if (is_ai_thinking_g){
+        return
+    }
+
+    is_ai_thinking_g = true
+
+    try {
+        const fen = boardToFen(ai_turn_payload.board, ai_turn_payload.current_turn)
+        const skill_level = getSkillLevelFromDifficulty(ai_turn_payload.difficulty)
+        const move_time_ms = getMoveTimeFromDifficulty(ai_turn_payload.difficulty)
+
+        getBestMoveFromStockfish(fen, skill_level, move_time_ms).then((uci_move) => {
+            if (!uci_move || (uci_move === '(none)')){
+                is_ai_thinking_g = false
+                return
+            }
+
+            const { from_cell, to_cell, promotion_type } = uciMoveToCellsAndPromotion(uci_move)
+            socket.emit('aiMoveMade', [from_cell, to_cell, promotion_type])
+            is_ai_thinking_g = false
+        }).catch((error) => {
+            console.log('Stockfish AI error:', error)
+            is_ai_thinking_g = false
+        })
+    } catch (error) {
+        console.log('Stockfish AI setup error:', error)
+        is_ai_thinking_g = false
+    }
+}
+
+socket.on('aiTurnToMove', (ai_turn_payload) => {
+    playAiMoveFromStockfish(ai_turn_payload)
 })
 
 
@@ -483,6 +556,9 @@ socket.on('clearCache', () => {
     player_color_g = null
     requesting_opponent_g = null
     move_counter_g = 1
+    is_ai_game_g = false
+    is_ai_thinking_g = false
+    updateDrawButtonVisibility()
     socket.emit('clearCacheOfOpponentAndGame')
 })
 
