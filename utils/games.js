@@ -1,9 +1,26 @@
 const createPiece = require('./pieces')
 
 const active_games = {}
+const games_by_join_code = {}
 
 function getGame(id){
     return active_games[id]
+}
+
+function getGameIdFromJoinCode(join_code){
+    return games_by_join_code[join_code] || null
+}
+
+function generateJoinCode(){
+    const code_chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    let join_code
+    do {
+        join_code = ''
+        for (let i = 0; i < 4; i++){
+            join_code += code_chars[Math.floor(Math.random() * code_chars.length)]
+        }
+    } while (games_by_join_code[join_code])
+    return join_code
 }
 
 function createGame(player_id){
@@ -71,7 +88,7 @@ function createGame(player_id){
     //     [null, null, null, null, Kw, Rwl, null, Rwr]      // 1: king e1, rook f1, rook h1
     // ]
     // Kb.cell = [0, 6]
-
+    
     function createPiecesObject(pieces_array){
         const pieces_object = {}
         pieces_array.forEach((piece) => {pieces_object[piece.id] = piece})
@@ -100,12 +117,18 @@ function createGame(player_id){
     game.past_plays_list = []
     game.current_turn = 'white'
     game.id = player_id
+    game.join_code = generateJoinCode()
     
     active_games[player_id] = game
+    games_by_join_code[game.join_code] = player_id
 
 }
 
 function deleteGame(id){
+    const game = active_games[id]
+    if (game?.join_code){
+        delete games_by_join_code[game.join_code]
+    }
     delete active_games[id]
 }
 
@@ -205,6 +228,7 @@ function promotePawnAndReturnIt(game_id, player_color, promotion_type){
 
 module.exports = {
     getGame,
+    getGameIdFromJoinCode,
     createGame,
     deleteGame,
     updateGameSelection,

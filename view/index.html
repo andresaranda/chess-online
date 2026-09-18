@@ -1,60 +1,52 @@
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>
-            Chess Online
-        </title>
+        <title>Chess Online — Free Multiplayer Chess by Andrés Aranda</title>
+        <meta name="description" content="Play free online multiplayer chess or challenge a computer opponent. A fullstack portfolio project by Andrés Aranda.">
+        <meta property="og:title" content="Chess Online — Free Multiplayer Chess">
+        <meta property="og:description" content="Play free online multiplayer chess or challenge a computer opponent.">
+        <meta property="og:type" content="website">
+        <meta name="theme-color" content="#79b4b7">
         <script src="https://kit.fontawesome.com/0afa017979.js" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="/css/styles.css">
         <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
     </head>
     <body>
         <header>
-            <div class="slide-left">
-                <h1 id="title">
-                    CHESS
-                </h1>
-                <h3 id="subtitle">
-                    FREE ONLINE MULTIPLAYER CHESS
-                </h3>
+            <div class="slide-left brand-block">
+                <h1 id="title">CHESS ONLINE</h1>
+                <p id="subtitle">Free multiplayer chess</p>
             </div>
             <a id="contact-note" class="slide-right" href="https://andresaranda.github.io/" target="_blank" rel="noreferrer noopener">
-                <div>
-                    made by 
-                </div>
-                <div>
-                    Andrés Aranda
-                </div>
+                <div>made by</div>
+                <div>Andrés Aranda</div>
             </a>
         </header>
         <main>
             <aside id="sidebar" class="slide-left">
                 <div class="user-data">
-                    <br>
+                    <span class="user-data-label">Player</span>
+                    <span class="user-data-name">&nbsp;</span>
                 </div>
                 <div id="quick-game-btn" class="sidebar-highlight">
-                    Start playing!
+                    Start playing
                 </div>
                 <div id="quick-game-options" class="hidden options">
-                    <input id="quick-game-input" type="text" spellcheck="false" placeholder="Choose a name...">
+                    <div class="input-with-clear">
+                        <input id="quick-game-input" type="text" spellcheck="false" placeholder="Choose a username..." autocomplete="off">
+                        <button type="button" class="input-clear-btn" data-clear-input="quick-game-input" aria-label="Clear username">&times;</button>
+                    </div>
                     <div id="quick-game-input-alert" class="alert hidden"></div>
-                    <button id="quick-game-input-btn" class="btn">
+                    <button id="quick-game-input-btn" class="btn" type="button" disabled>
                         Use this username
                     </button>
                     <button id="quick-game-random-btn" class="btn">
                         Random username
                     </button>
                 </div>
-                <!-- <div id="log-in-btn" class="sidebar-highlight">
-                    Log In
-                </div> -->
-                <!-- <div id="new-player-btn" class="sidebar-highlight">
-                    New Player
-                </div> -->
                 <div id="log-out-btn" class="sidebar-highlight hidden">
                     Change Username
                 </div>
@@ -63,9 +55,14 @@
                         Confirm
                     </button>
                 </div>
-                <!-- <div id="load-game-btn" class="sidebar-highlight">
-                    Load Old Game
-                </div> -->
+                <div id="ai-game-btn" class="sidebar-highlight hidden">
+                    Play vs Computer
+                </div>
+                <div id="ai-game-options" class="hidden options">
+                    <button id="ai-game-easy-btn" class="btn">Easy</button>
+                    <button id="ai-game-medium-btn" class="btn">Medium</button>
+                    <button id="ai-game-hard-btn" class="btn">Hard</button>
+                </div>
                 <div id="new-game-btn" class="sidebar-highlight hidden">
                     Create New Game
                 </div>
@@ -78,9 +75,12 @@
                     Join Friend's Game
                 </div>
                 <div id="join-game-options" class="hidden options">
-                    <input id="join-game-input" type="text" spellcheck="false" placeholder="Friend's username...">
+                    <div class="input-with-clear">
+                        <input id="join-game-input" type="text" spellcheck="false" placeholder="Username or join code..." autocomplete="off">
+                        <button type="button" class="input-clear-btn" data-clear-input="join-game-input" aria-label="Clear join field">&times;</button>
+                    </div>
                     <div id="join-game-input-alert" class="alert hidden"></div>
-                    <button id="join-game-input-btn" class="btn">
+                    <button id="join-game-input-btn" class="btn" type="button" disabled>
                         Join
                     </button>
                     <button id="join-game-cancel-btn" class="btn hidden">
@@ -96,75 +96,73 @@
                         Cancel search
                     </button>
                 </div>
-                <div id="ai-game-btn" class="sidebar-highlight hidden">
-                    Play vs Computer
-                </div>
-                <div id="ai-game-options" class="hidden options">
-                    <button id="ai-game-easy-btn" class="btn">Easy</button>
-                    <button id="ai-game-medium-btn" class="btn">Medium</button>
-                    <button id="ai-game-hard-btn" class="btn">Hard</button>
-                </div>
                 <div id="exit-game-btn" class="sidebar-highlight hidden">
                     Exit Game
                 </div>
             </aside>
-            <div id="board-container"  class="slide-left">
+            <div id="board-container" class="slide-left">
                 <div id="opponent-info" class="game-info hidden">
-                    <div class="name"></div>
+                    <div class="name-block">
+                        <div class="name"></div>
+                        <div class="turn-indicator hidden">Their turn</div>
+                    </div>
                     <div class="captured-pieces"></div>
                 </div>
                 <div id="board">
-                    <div class="overlay hidden">
-                        <div id="board-alert-box" class="hidden">
+                    <div class="overlay overlay-show">
+                        <div id="board-alert-box">
                             <div class="title">
-                                Welcome!
+                                Welcome
                             </div>
-                            <button class="close-btn">&times;</button>
+                            <button class="close-btn" type="button" aria-label="Close">&times;</button>
                             <div class="content">
-                                Press Log-in in left menu to start playing: pick a username or press Random Name for an automated one.
+                                Press Start playing in the menu, pick a username (or Random username), then create a game, join a friend, find a random opponent, or play the computer.
                             </div>
-                            <button class="join-btn btn hidden">JOIN</button>
-                            <button class="ignore-btn btn hidden">IGNORE</button>
-                            <button class="cancel-btn btn hidden">CANCEL GAME</button>
-                            <button class="cancel-search-btn btn hidden">CANCEL SEARCH</button>
-                            <button class="cancel-join-btn btn hidden">CANCEL REQUEST</button>
-                            <button class="confirm-resign-btn btn hidden">RESIGN</button>
-                            <button class="accept-draw-btn btn hidden">ACCEPT DRAW</button>
-                            <button class="deny-draw-btn btn hidden">DENY</button>
+                            <button class="ok-btn btn" type="button">OK</button>
+                            <button class="copy-link-btn btn hidden" type="button">Copy link</button>
+                            <button class="join-btn btn hidden" type="button">JOIN</button>
+                            <button class="ignore-btn btn hidden" type="button">IGNORE</button>
+                            <button class="cancel-btn btn hidden" type="button">CANCEL GAME</button>
+                            <button class="cancel-search-btn btn hidden" type="button">CANCEL SEARCH</button>
+                            <button class="cancel-join-btn btn hidden" type="button">CANCEL REQUEST</button>
+                            <button class="confirm-resign-btn btn hidden" type="button">RESIGN</button>
+                            <button class="accept-draw-btn btn hidden" type="button">ACCEPT DRAW</button>
+                            <button class="deny-draw-btn btn hidden" type="button">DENY</button>
                             <div id="promotion-btns" class="hidden">
-                                <div id="promotion-type-knight-btn"></div>
-                                <div id="promotion-type-bishop-btn"></div>
-                                <div id="promotion-type-rook-btn"></div>
-                                <div id="promotion-type-queen-btn"></div>
+                                <div id="promotion-type-knight-btn" title="Knight"></div>
+                                <div id="promotion-type-bishop-btn" title="Bishop"></div>
+                                <div id="promotion-type-rook-btn" title="Rook"></div>
+                                <div id="promotion-type-queen-btn" title="Queen"></div>
                             </div>
                         </div>
                     </div>
+                    <div id="ai-thinking" class="hidden" aria-live="polite">Computer is thinking…</div>
                 </div>
                 <div id="player-info" class="game-info hidden">
-                    <div class="name"></div>
+                    <div class="name-block">
+                        <div class="name"></div>
+                        <div class="turn-indicator hidden">Your turn</div>
+                    </div>
                     <div class="captured-pieces"></div>
                 </div>
             </div>
-            <div id="right-container"  class="slide-right">
+            <div id="right-container" class="slide-right">
                 <div id="move-table">
                     <div class="table-header">
-                        LAST MOVES
+                        Last moves
                     </div>
-                    <div class="move-table-content"></div>
-                </div>
-                <div class="btn-container">
-                    <button id="resign-btn" class="btn">Resign</button>
-                </div>
-                <div class="btn-container">
-                    <button id="draw-btn" class="btn">Draw</button>
-                </div>
-                <!-- <div id="chat-table">
-                    <div id="chat-box"></div>
-                    <div id="chat-input-container">
-                        <input id="chat-input" type="text" placeholder="Enter message...">
-                        <button id="chat-btn">SEND</button>
+                    <div class="move-table-content">
+                        <div class="move-table-empty">Moves will appear here once a game starts.</div>
                     </div>
-                </div> -->
+                </div>
+                <div id="game-actions" class="hidden">
+                    <div class="btn-container">
+                        <button id="resign-btn" class="btn" type="button">Resign</button>
+                    </div>
+                    <div class="btn-container">
+                        <button id="draw-btn" class="btn" type="button">Draw</button>
+                    </div>
+                </div>
             </div>
         </main>
         <footer>
@@ -176,7 +174,7 @@
             </div>
             <div id="foot-grid">
                 <div class="foot-grid-title">
-                    Contact information:
+                    Contact
                 </div>
                 <a class="footer-link" href="mailto:aaranda@pucp.edu.pe" target="_blank" rel="noreferrer noopener">
                     <div>
@@ -184,14 +182,6 @@
                     </div>
                     <div>
                         aaranda@pucp.edu.pe
-                    </div>
-                </a>
-                <a class="footer-link" href="tel:+51-991-099-482" target="_blank" rel="noreferrer noopener">
-                    <div>
-                        <i class="fas fa-phone-alt foot-icon"></i>
-                    </div>
-                    <div>
-                        +51-991-099-482
                     </div>
                 </a>
                 <a class="footer-link" href="https://andresaranda.github.io/" target="_blank" rel="noreferrer noopener">

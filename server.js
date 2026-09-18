@@ -37,6 +37,11 @@ io.on('connection', socket => {
         return validatedStringData(username, regex)
     }
 
+    function validatedJoinCode(join_code){
+        const regex = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/
+        return validatedStringData(String(join_code).toUpperCase(), regex)
+    }
+
     function validatedColor(color){
         const regex = /^(white|black|random)$/
         return validatedStringData(color, regex)
@@ -282,7 +287,11 @@ io.on('connection', socket => {
             players_db.linkPlayerToGame(player_g.id, game_g.id, validated_color)
             players_db.removeAwaitingPlayerIfIsCurrentPlayer(player_g.id)
 
-            socket.emit('newGameCreated', [game_g.board, validated_color])
+            socket.emit('newGameCreated', {
+                board: game_g.board,
+                player_color: validated_color,
+                join_code: game_g.join_code
+            })
         }
     })
 
@@ -335,57 +344,77 @@ io.on('connection', socket => {
         }
     })
 
-    socket.on('joinGame', (opponent_username) => {
-        const validated_opponent_username = validatedUsername(opponent_username)
-        if (validated_opponent_username === false){
-            const error = "Error joining game: username may only contain letters, numbers and underscores, start with a letter, and be 6 to 18 characters long"
-            socket.emit('consoleLogError', error)
-            return
-        }
-        
+    socket.on('joinGame', (join_target) => {
         if (!player_g){
             return
         }
 
-        const possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
-        if (possible_opponent_id === null){
-            const error = `Username '${validated_opponent_username}' does not exist, please provide a different one`
-            socket.emit('joinGameError', error)
+        const validated_join_code = validatedJoinCode(join_target)
+        let possible_opponent_id = null
+        let join_label = null
 
+        if (validated_join_code){
+            const host_game_id = games_db.getGameIdFromJoinCode(validated_join_code)
+            if (host_game_id === null){
+                socket.emit('joinGameError', `Join code '${validated_join_code}' was not found`)
+                return
+            }
+            possible_opponent_id = host_game_id
+            join_label = validated_join_code
         } else {
-            const possible_opponent = players_db.getPlayer(possible_opponent_id)
-            if (possible_opponent.current_socket_id === null){
-                const error = `${validated_opponent_username} is currently not logged in`
-                socket.emit('joinGameError', error)
-
-            } else if (possible_opponent.active_game_id === null){
-                const error = `${validated_opponent_username} hasn't started a game yet, to start a game press Create New Game`
-                socket.emit('joinGameError', error)
-
-            } else if (possible_opponent.active_opponent !== null){
-                const error = `${validated_opponent_username} is already in an active game`
-                socket.emit('joinGameError', error)
-
-            } else {
-                const possible_opponent_game = games_db.getGame(possible_opponent.active_game_id)
-                if (possible_opponent_game?.is_ai_game){
-                    const error = `${validated_opponent_username} is already in an active game`
-                    socket.emit('joinGameError', error)
-                } else if (player_g.active_game_id){
-                    socket.emit('askIfCancelCurrentGame')
-                } else {
-                    if (player_g.pending_join_id && (player_g.pending_join_id !== possible_opponent.id)){
-                        const previous_host = players_db.getPlayer(player_g.pending_join_id)
-                        if (previous_host?.current_socket_id){
-                            io.to(previous_host.current_socket_id).emit('joinRequestCancelled', player_g.username)
-                        }
-                    }
-                    player_g.pending_join_id = possible_opponent.id
-                    io.to(possible_opponent.current_socket_id).emit('joinGameRequest', player_g.username)
-                }
+            const validated_opponent_username = validatedUsername(join_target)
+            if (validated_opponent_username === false){
+                socket.emit('joinGameError', 'Enter a valid username (6–18 characters) or a 4-character join code')
+                return
+            }
+            possible_opponent_id = players_db.getPlayerIdFromUsername(validated_opponent_username)
+            join_label = validated_opponent_username
+            if (possible_opponent_id === null){
+                socket.emit('joinGameError', `Username '${validated_opponent_username}' does not exist, please provide a different one`)
+                return
             }
         }
-        
+
+        const possible_opponent = players_db.getPlayer(possible_opponent_id)
+        if (!possible_opponent){
+            socket.emit('joinGameError', 'That game host was not found')
+            return
+        }
+
+        if (possible_opponent.current_socket_id === null){
+            socket.emit('joinGameError', `${join_label} is currently not logged in`)
+            return
+        }
+
+        if (possible_opponent.active_game_id === null){
+            socket.emit('joinGameError', `${join_label} hasn't started a game yet — ask them to create a new game`)
+            return
+        }
+
+        if (possible_opponent.active_opponent !== null){
+            socket.emit('joinGameError', `${join_label} is already in an active game`)
+            return
+        }
+
+        const possible_opponent_game = games_db.getGame(possible_opponent.active_game_id)
+        if (possible_opponent_game?.is_ai_game){
+            socket.emit('joinGameError', `${join_label} is already in an active game`)
+            return
+        }
+
+        if (player_g.active_game_id){
+            socket.emit('askIfCancelCurrentGame')
+            return
+        }
+
+        if (player_g.pending_join_id && (player_g.pending_join_id !== possible_opponent.id)){
+            const previous_host = players_db.getPlayer(player_g.pending_join_id)
+            if (previous_host?.current_socket_id){
+                io.to(previous_host.current_socket_id).emit('joinRequestCancelled', player_g.username)
+            }
+        }
+        player_g.pending_join_id = possible_opponent.id
+        io.to(possible_opponent.current_socket_id).emit('joinGameRequest', player_g.username)
     })
 
     socket.on('confirmJoin', (opponent_username) => {

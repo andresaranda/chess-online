@@ -10,6 +10,9 @@ let is_ai_game_g = false
 let is_ai_thinking_g = false
 let is_seeking_random_g = false
 let is_waiting_join_g = false
+let current_turn_g = 'white'
+let pending_join_target_g = new URLSearchParams(window.location.search).get('join')
+let pending_share_url_g = null
 
 // syntactic sugar
 function getElement(selectors){
@@ -43,6 +46,8 @@ const board_alert_cancel_search_btn = getElement('#board-alert-box .cancel-searc
 const board_alert_cancel_join_btn = getElement('#board-alert-box .cancel-join-btn')
 const board_alert_promotion_btns = getElement('#promotion-btns')
 const board_alert_close_btn = getElement('#board-alert-box .close-btn')
+const board_alert_ok_btn = getElement('#board-alert-box .ok-btn')
+const board_alert_copy_link_btn = getElement('#board-alert-box .copy-link-btn')
 const board_alert_confirm_resign_btn = getElement('#board-alert-box .confirm-resign-btn')
 const board_alert_accept_draw_btn = getElement('#board-alert-box .accept-draw-btn')
 const board_alert_deny_draw_btn = getElement('#board-alert-box .deny-draw-btn')
@@ -51,6 +56,11 @@ const promotion_type_bishop_btn = getElement('#promotion-type-bishop-btn')
 const promotion_type_rook_btn = getElement('#promotion-type-rook-btn')
 const promotion_type_queen_btn = getElement('#promotion-type-queen-btn')
 const user_data = getElement('.user-data')
+const user_data_name = getElement('.user-data-name')
+const player_turn_indicator = getElement('#player-info .turn-indicator')
+const opponent_turn_indicator = getElement('#opponent-info .turn-indicator')
+const ai_thinking = getElement('#ai-thinking')
+const game_actions = getElement('#game-actions')
 const quick_game_btn = getElement('#quick-game-btn')
 const quick_game_options = getElement('#quick-game-options')
 const quick_game_input = getElement('#quick-game-input')
@@ -89,7 +99,7 @@ const sidebar_toggle_elements = [quick_game_options, new_game_options, join_game
 
 
 
-// SLIDE IN OF ELEMENTS FROM SIDES:
+//? SLIDE IN OF ELEMENTS FROM SIDES:
 
 slide_from_left.forEach((element) => {element.classList.add('appear')})
 slide_from_right.forEach((element) => {element.classList.add('appear')})
@@ -97,7 +107,7 @@ slide_from_right.forEach((element) => {element.classList.add('appear')})
 
 
 
-// OPENING AND CLOSING OF VISUAL OPTION ELEMENTS (PURELY AESTHETIC):
+//? OPENING AND CLOSING OF VISUAL OPTION ELEMENTS (PURELY AESTHETIC):
 
 function hideElements(elem_list){
     for (let elem of elem_list){
@@ -142,13 +152,54 @@ function showSeekingOrWaitingOptionElements(){
 }
 
 function toggleSidebarOptions(elem){
+    const was_hidden = elem.classList.contains('hidden')
     toggleHideOrShow(elem)
     hideAllToggleElementsExceptEspecified(elem)
     showSeekingOrWaitingOptionElements()
+    if (was_hidden && !elem.classList.contains('hidden')){
+        scrollSidebarSectionIntoView(elem)
+    }
+}
+
+function scrollSidebarSectionIntoView(options_elem){
+    const aside_elem = options_elem.closest('aside')
+    if (!aside_elem){
+        return
+    }
+
+    const scroll_expanded_section = () => {
+        const aside_can_scroll = aside_elem.scrollHeight > aside_elem.clientHeight + 1
+        if (!aside_can_scroll){
+            const section_btn = options_elem.previousElementSibling
+            const top_target = section_btn || options_elem
+            top_target.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+            const last_option = options_elem.lastElementChild
+            if (last_option){
+                last_option.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+            }
+            return
+        }
+
+        const aside_rect = aside_elem.getBoundingClientRect()
+        const options_rect = options_elem.getBoundingClientRect()
+        const section_btn = options_elem.previousElementSibling
+        const top_rect = section_btn ? section_btn.getBoundingClientRect() : options_rect
+        const overflow_bottom = options_rect.bottom - aside_rect.bottom
+        const overflow_top = aside_rect.top - top_rect.top
+
+        if (overflow_bottom > 0){
+            aside_elem.scrollBy({ top: overflow_bottom + 12, behavior: 'smooth' })
+        } else if (overflow_top > 0){
+            aside_elem.scrollBy({ top: -(overflow_top + 12), behavior: 'smooth' })
+        }
+    }
+
+    // Wait for the options height transition so the final bounds are used
+    setTimeout(scroll_expanded_section, 220)
 }
 
 function updateLeftSidebarToLogIn(username){
-    user_data.textContent = username
+    user_data_name.textContent = username
     toggleHideOrShow(quick_game_options)
     hideElements(logged_out_elements)
     showElements(logged_in_elements)
@@ -156,7 +207,7 @@ function updateLeftSidebarToLogIn(username){
 }
 
 function updateLeftSidebarToLogOut(){
-    user_data.textContent = " "
+    user_data_name.textContent = "\u00a0"
     toggleHideOrShow(log_out_options)
     hideElements(logged_in_elements)
     hideElements(in_game_menu_elements)
@@ -175,11 +226,21 @@ function updateSidebarForNoActiveGame(){
 }
 
 function updateDrawButtonVisibility(){
+    const draw_container = draw_btn.closest('.btn-container') || draw_btn.parentElement
     if (is_ai_game_g){
-        hideElements([draw_btn, draw_btn.parentElement])
+        hideElements([draw_container])
     } else {
-        showElements([draw_btn, draw_btn.parentElement])
+        showElements([draw_container])
     }
+}
+
+function showGameActions(){
+    showElements([game_actions])
+    updateDrawButtonVisibility()
+}
+
+function hideGameActions(){
+    hideElements([game_actions])
 }
 
 quick_game_btn.addEventListener('click', () => {
@@ -205,9 +266,9 @@ ai_game_btn.addEventListener('click', () => {
 
 
 
-// FUNCTIONS FOR OPENING AND CLOSING FUNCTIONAL ELEMENTS:
+//? FUNCTIONS FOR OPENING AND CLOSING FUNCTIONAL ELEMENTS:
 
-// 'special_btns' may be 'join', 'cancel', 'cancel-search', 'cancel-join', 'promotion', 'resign', 'draw'
+// 'special_btns' may be 'join', 'cancel', 'cancel-search', 'cancel-join', 'promotion', 'resign', 'draw', 'share'
 function openBoardAlertPopup(title, content, special_btns = null){
     board_alert_join_btn.classList.add('hidden')
     board_alert_ignore_btn.classList.add('hidden')
@@ -218,6 +279,8 @@ function openBoardAlertPopup(title, content, special_btns = null){
     board_alert_confirm_resign_btn.classList.add('hidden')
     board_alert_accept_draw_btn.classList.add('hidden')
     board_alert_deny_draw_btn.classList.add('hidden')
+    board_alert_copy_link_btn.classList.add('hidden')
+    board_alert_ok_btn.classList.add('hidden')
     board_alert_close_btn.classList.remove('hidden')
 
     board_alert.classList.remove('hidden')
@@ -243,6 +306,13 @@ function openBoardAlertPopup(title, content, special_btns = null){
     } else if (special_btns === 'draw'){
         board_alert_accept_draw_btn.classList.remove('hidden')
         board_alert_deny_draw_btn.classList.remove('hidden')
+    } else if (special_btns === 'share'){
+        board_alert_copy_link_btn.classList.remove('hidden')
+        board_alert_ok_btn.classList.remove('hidden')
+        board_alert_ok_btn.textContent = 'OK'
+    } else {
+        board_alert_ok_btn.classList.remove('hidden')
+        board_alert_ok_btn.textContent = 'OK'
     }
 
     board_element.scrollIntoView(false)
@@ -261,7 +331,11 @@ function closeBoardAlertPopup(){
     board_alert_confirm_resign_btn.classList.add('hidden')
     board_alert_accept_draw_btn.classList.add('hidden')
     board_alert_deny_draw_btn.classList.add('hidden')
+    board_alert_copy_link_btn.classList.add('hidden')
+    board_alert_ok_btn.classList.add('hidden')
+    board_alert_ok_btn.textContent = 'OK'
     board_alert_close_btn.classList.remove('hidden')
+    pending_share_url_g = null
 }
 
 function openQuickGameAlert(message){
@@ -294,17 +368,25 @@ function closeRandomOpponentAlert(){
 
 
 
-// INPUT VALIDATION FUNCTIONS:
+//? INPUT VALIDATION FUNCTIONS:
 
 function validateUsername(username){
     const str_username = String(username)
     return (str_username.match(/^[A-Za-z][A-Za-z0-9_]{5,17}$/)) ? true : false
 }
 
+function validateJoinCode(join_code){
+    return /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/i.test(String(join_code).trim())
+}
+
+function normalizeJoinTarget(join_target){
+    return String(join_target).trim()
+}
 
 
 
-// BOARD CREATION FUNCTIONS:
+
+//? BOARD CREATION FUNCTIONS:
 
 function addImageSourceToPieceElement(piece_elem, piece_color, piece_type){
     piece_elem.src = `../images/pieces/${piece_color}-${piece_type}.png`
@@ -349,7 +431,7 @@ function createBoard(board, player_color){
 
 
 
-// BOARD DELETION FUNCTIONS:
+//? BOARD DELETION FUNCTIONS:
 
 function removeElement(element_identifier){
     const element = getElement(element_identifier)
@@ -386,21 +468,95 @@ function deleteLastMovesFromTable(){
     move_table_content = getElement('.move-table-content')
 }
 
+function clearMoveTableEmptyMessage(){
+    const empty_message = move_table_content.querySelector('.move-table-empty')
+    if (empty_message){
+        empty_message.remove()
+    }
+}
+
+function showMoveTableEmptyMessage(){
+    clearMoveTableEmptyMessage()
+    const empty_message = document.createElement('div')
+    empty_message.classList.add('move-table-empty')
+    empty_message.textContent = 'Moves will appear here once a game starts.'
+    move_table_content.appendChild(empty_message)
+}
+
 // clear all game data on front end
-function clearGameData(){
+function clearBoardVisualsKeepMoves(){
     deactivateBoard()
     deletePiecesFromBoard()
     deletePiecesFromCapturedPiecesContainers()
-    deleteLastMovesFromTable()
     board_element.style.backgroundImage = 'url(../images/checkered-board.svg)'
     opponent_name.textContent = ""
     hideElements([opponent_info])
+    hideGameActions()
+    setAiThinkingVisible(false)
+    current_turn_g = 'white'
+    hideElements([player_turn_indicator, opponent_turn_indicator])
+}
+
+function clearGameData(){
+    clearBoardVisualsKeepMoves()
+    deleteLastMovesFromTable()
+    showMoveTableEmptyMessage()
 }
 
 
 
 
-// PLAYER CREATION AND DELETION, AND GAME CREATION AND JOINING:
+//? PLAYER CREATION AND DELETION, AND GAME CREATION AND JOINING:
+
+function updateInputWithClearButtonState(input_element, action_btn){
+    const has_value = (input_element.value.trim().length > 0)
+    action_btn.disabled = !has_value
+    input_element.closest('.input-with-clear')?.classList.toggle('has-value', has_value)
+}
+
+function updateQuickGameInputButtonState(){
+    updateInputWithClearButtonState(quick_game_input, quick_game_input_btn)
+}
+
+function updateJoinInputButtonState(){
+    updateInputWithClearButtonState(join_game_input, join_game_input_btn)
+}
+
+function clearTextInput(input_element){
+    input_element.value = ''
+    input_element.dispatchEvent(new Event('input', { bubbles: true }))
+    input_element.focus()
+}
+
+function bindInputClearButtons(){
+    document.querySelectorAll('.input-clear-btn').forEach((clear_btn) => {
+        clear_btn.addEventListener('click', () => {
+            const input_element = getElement(`#${clear_btn.dataset.clearInput}`)
+            if (input_element){
+                clearTextInput(input_element)
+            }
+        })
+    })
+}
+
+function applyPendingJoinTargetFromUrl(){
+    if (!pending_join_target_g){
+        return
+    }
+    join_game_input.value = pending_join_target_g
+    showElements([join_game_options])
+    hideAllToggleElementsExceptEspecified(join_game_options)
+    updateJoinInputButtonState()
+}
+
+function clearPendingJoinTargetFromUrl(){
+    if (!pending_join_target_g){
+        return
+    }
+    pending_join_target_g = null
+    const clean_url = `${window.location.origin}${window.location.pathname}`
+    window.history.replaceState({}, '', clean_url)
+}
 
 function clearRandomSearchState(){
     is_seeking_random_g = false
@@ -442,7 +598,7 @@ function openCancelPendingRequestPopup(){
 
 function startRandomSearch(){
     is_seeking_random_g = true
-    openRandomOpponentAlert("Finding opponent...")
+    openRandomOpponentAlert("Looking for an opponent…")
     showElements([random_opponent_cancel_btn])
     hideAllToggleElementsExceptEspecified(random_opponent_options)
     socket.emit('randomGame', generateRandomColor())
@@ -455,6 +611,12 @@ function startJoinWait(opponents_username){
     hideAllToggleElementsExceptEspecified(join_game_options)
     socket.emit('joinGame', opponents_username)
 }
+
+quick_game_input.addEventListener('input', updateQuickGameInputButtonState)
+join_game_input.addEventListener('input', updateJoinInputButtonState)
+bindInputClearButtons()
+updateQuickGameInputButtonState()
+updateJoinInputButtonState()
 
 quick_game_input_btn.addEventListener('click', () => {
     const proposed_username = quick_game_input.value
@@ -475,9 +637,10 @@ socket.on('logInSuccessful', (username) => { // temporarily on playerCreated
     updateLeftSidebarToLogIn(username)
     player_name.textContent = username
     showElements([player_info])
+    applyPendingJoinTargetFromUrl()
 
-    const title = `Successfully logged in as: ${username}!`
-    const text = "To begin playing, create a new game, join a friend's game or join a random game in the menu to the left."
+    const title = `Welcome, ${username}`
+    const text = "Create a new game, join a friend with their username or join code, find a random opponent, or play the computer."
     openBoardAlertPopup(title, text)
 })
 
@@ -500,8 +663,8 @@ socket.on('logOutSuccessful', () => { // temporarily on playerDeleted
     player_name.textContent = ""
     hideElements([player_info])
 
-    const title = "Username cleared."
-    const text = "To play again, press Log-in in the left menu: pick a username or press Random Name for an automated one."
+    const title = "Username cleared"
+    const text = "Press Start playing in the menu to choose a username again."
     openBoardAlertPopup(title, text)
 })
 
@@ -518,27 +681,38 @@ new_game_options.addEventListener('click', (event) => {
     }
 })
 
-socket.on('newGameCreated', ([board, player_color]) => {
+socket.on('newGameCreated', (payload) => {
+    const board = Array.isArray(payload) ? payload[0] : payload.board
+    const player_color = Array.isArray(payload) ? payload[1] : payload.player_color
+    const join_code = Array.isArray(payload) ? payload[2] : payload.join_code
+
     clearGameData()
     clearRandomSearchState()
     clearJoinWaitState()
     createBoard(board, player_color)
     player_color_g = player_color
     is_ai_game_g = false
-    updateDrawButtonVisibility()
+    current_turn_g = 'white'
+    hideElements([player_turn_indicator, opponent_turn_indicator])
     updateSidebarForActiveGame()
 
-    const title = "New game created!"
-    const text = "Ask a friend to Join your game by using your Username or click on 'Join Random Game' to be matched with a random player."
-    openBoardAlertPopup(title, text)
+    const share_url = join_code
+        ? `${window.location.origin}${window.location.pathname}?join=${join_code}`
+        : null
+    pending_share_url_g = share_url
+    const title = "Game ready"
+    const text = join_code
+        ? `Share join code ${join_code} with a friend, or copy the invite link below. They can also join with your username.`
+        : "Ask a friend to join with your username, or share a join code once available."
+    openBoardAlertPopup(title, text, join_code ? 'share' : null)
     hideAllToggleElements()
 })
 
 join_game_input_btn.addEventListener('click', () => {
-    const opponents_username = join_game_input.value
-    
-    if (!validateUsername(opponents_username)){
-        openJoinGameAlert("Please place a valid username between 6 and 18 characters long")
+    const join_target = normalizeJoinTarget(join_game_input.value)
+
+    if (!validateUsername(join_target) && !validateJoinCode(join_target)){
+        openJoinGameAlert("Enter a username (6–18 characters) or a 4-character join code")
         return
     }
 
@@ -550,7 +724,8 @@ join_game_input_btn.addEventListener('click', () => {
         return
     }
 
-    startJoinWait(opponents_username)
+    const normalized_target = validateJoinCode(join_target) ? join_target.toUpperCase() : join_target
+    startJoinWait(normalized_target)
 })
 
 socket.on('joinGameRequest', (opponent_username) => {
@@ -592,8 +767,10 @@ socket.on('newGameJoined', ([board, player_color]) => {
     clearJoinWaitState()
     clearRandomSearchState()
     player_color_g = player_color
+    current_turn_g = 'white'
+    updateTurnIndicators()
 
-    const title = "Joined new game!"
+    const title = "Joined game"
     const text = "Close this window to begin playing."
     openBoardAlertPopup(title, text)
 })
@@ -603,12 +780,15 @@ socket.on('joinGameSuccessful', (opponent_username, is_ai_game = false) => {
     opponent_name.textContent = opponent_username
     showElements([opponent_info])
     is_ai_game_g = is_ai_game
-    updateDrawButtonVisibility()
     updateSidebarForActiveGame()
+    showGameActions()
     clearRandomSearchState()
     clearJoinWaitState()
+    current_turn_g = current_turn_g || 'white'
+    updateTurnIndicators()
     socket.emit('cacheOpponentAndGame')
     hideAllToggleElements()
+    clearPendingJoinTargetFromUrl()
 })
 
 socket.on('joinGameError', (error) => {
@@ -657,7 +837,7 @@ ai_game_options.addEventListener('click', (event) => {
 
 
 
-// GAME INTERACTION MESSAGES:
+//? GAME INTERACTION MESSAGES:
 
 function cancelCurrentGame(){
     socket.emit('confirmCancel')
@@ -676,8 +856,11 @@ socket.on('clearCache', () => {
     move_counter_g = 1
     is_ai_game_g = false
     is_ai_thinking_g = false
+    current_turn_g = 'white'
     resetStockfishEngine()
-    updateDrawButtonVisibility()
+    setAiThinkingVisible(false)
+    hideGameActions()
+    updateTurnIndicators()
     updateSidebarForNoActiveGame()
     socket.emit('clearCacheOfOpponentAndGame')
 })
@@ -692,6 +875,28 @@ board_alert_close_btn.addEventListener('click', () => {
     } else {
         closeBoardAlertPopup()
     }
+})
+
+function copyShareUrlToClipboard(){
+    if (!pending_share_url_g){
+        return
+    }
+    navigator.clipboard.writeText(pending_share_url_g).then(() => {
+        board_alert_copy_link_btn.textContent = 'Copied!'
+        setTimeout(() => {
+            board_alert_copy_link_btn.textContent = 'Copy link'
+        }, 1600)
+    }).catch(() => {
+        board_alert_content.textContent = `Copy this link: ${pending_share_url_g}`
+    })
+}
+
+board_alert_ok_btn.addEventListener('click', () => {
+    closeBoardAlertPopup()
+})
+
+board_alert_copy_link_btn.addEventListener('click', () => {
+    copyShareUrlToClipboard()
 })
 
 socket.on('askIfCancelCurrentGame', () => {
@@ -722,19 +927,17 @@ resign_btn.addEventListener('click', () => {
 
 board_alert_confirm_resign_btn.addEventListener('click', () => {
     socket.emit('resign')
-    cancelCurrentGame()
-    closeBoardAlertPopup()
-
     const score = (player_color_g === 'white') ? '0-1' : '1-0'
     createNewMoveTableItem(score)
+    socket.emit('confirmCancel')
+    closeBoardAlertPopup()
+    presentFinishedGame("You resigned")
 })
 
 socket.on('opponentResigned', () => {
-    const title = "Game won!!! Opponent resigned!"
-    openBoardAlertPopupForFinishedGame(title)
-
     const score = (player_color_g === 'white') ? '1-0' : '0-1'
     createNewMoveTableItem(score)
+    presentFinishedGame("Game won — opponent resigned!")
 })
 
 draw_btn.addEventListener('click', () => {
@@ -758,10 +961,8 @@ board_alert_deny_draw_btn.addEventListener('click', () => {
 })
 
 socket.on('gameDrawn', () => {
-    const title = "Draw by mutual agreement!"
-    openBoardAlertPopupForFinishedGame(title)
-
     createNewMoveTableItem('½–½')
+    presentFinishedGame("Draw by mutual agreement")
 })
 
 socket.on('informDeniedDrawRequest', () => {
@@ -773,65 +974,95 @@ socket.on('informDeniedDrawRequest', () => {
 
 
 
-// FINISHED GAME MESSAGES:
+//? FINISHED GAME MESSAGES:
+
+function presentFinishedGame(title){
+    clearBoardVisualsKeepMoves()
+    updateSidebarForNoActiveGame()
+    openBoardAlertPopupForFinishedGame(title)
+}
 
 function openBoardAlertPopupForFinishedGame(title){
-    const text = "To play again, create a new game, join a friend's game or join a random game in the menu to the left"
+    const text = "Create a new game, join a friend, find a random opponent, or play the computer whenever you're ready."
     openBoardAlertPopup(title, text)
 }
 
 socket.on('gameCancelledByOpponent', () => {
-    const title = "Game cancelled by opponent :("
-    openBoardAlertPopupForFinishedGame(title)
-
     const score = (player_color_g === 'white') ? '1-0' : '0-1'
     createNewMoveTableItem(score)
+    presentFinishedGame("Game cancelled by opponent")
 })
 
 socket.on('opponentLoggedOut', () => {
-    const title = "Opponent Logged Out :("
-    openBoardAlertPopupForFinishedGame(title)
-
     const score = (player_color_g === 'white') ? '1-0' : '0-1'
     createNewMoveTableItem(score)
+    presentFinishedGame("Opponent logged out")
 })
 
 socket.on('gameOverByCheckmateWon', () => {
-    const title = "Game won by checkmate!!!"
-    openBoardAlertPopupForFinishedGame(title)
-    
     createNewMoveTableItem('#')
     const score = (player_color_g === 'white') ? '1-0' : '0-1'
     createNewMoveTableItem(score)
+    presentFinishedGame("Checkmate — you win!")
 })
 
 socket.on('gameOverByCheckmateLost', () => {
-    const title = "Game Over, lost by checkmate :("
-    openBoardAlertPopupForFinishedGame(title)
-
     createNewMoveTableItem('#')
     const score = (player_color_g === 'white') ? '0-1' : '1-0'
     createNewMoveTableItem(score)
+    presentFinishedGame("Checkmate — you lose")
 })
 
 socket.on('gameOverByStalemate', () => {
-    const title = "Draw by stalemate"
-    openBoardAlertPopupForFinishedGame(title)
-
     createNewMoveTableItem('½–½')
+    presentFinishedGame("Draw by stalemate")
 })
 
 socket.on('gameOverByDeadPosition', () => {
-    const title = "Draw by dead position"
-    openBoardAlertPopupForFinishedGame(title)
-
     createNewMoveTableItem('½–½')
+    presentFinishedGame("Draw by dead position")
 })
 
 
 
 
-// GAME:
+//? GAME:
+
+function updateTurnIndicators(){
+    if (!player_color_g){
+        hideElements([player_turn_indicator, opponent_turn_indicator])
+        return
+    }
+    const is_player_turn = (current_turn_g === player_color_g)
+    if (is_player_turn){
+        showElements([player_turn_indicator])
+        hideElements([opponent_turn_indicator])
+        player_turn_indicator.classList.add('active')
+        opponent_turn_indicator.classList.remove('active')
+    } else {
+        showElements([opponent_turn_indicator])
+        hideElements([player_turn_indicator])
+        opponent_turn_indicator.classList.add('active')
+        player_turn_indicator.classList.remove('active')
+    }
+}
+
+function setCurrentTurnToOppositeColor(piece_color){
+    current_turn_g = (piece_color === 'white') ? 'black' : 'white'
+    updateTurnIndicators()
+}
+
+function setAiThinkingVisible(is_visible){
+    if (is_visible){
+        showElements([ai_thinking])
+    } else {
+        hideElements([ai_thinking])
+    }
+}
+
+function scrollMoveTableToBottom(){
+    move_table_content.scrollTop = move_table_content.scrollHeight
+}
 
 function playAiMoveFromStockfish(ai_turn_payload){
     if (is_ai_thinking_g){
@@ -839,6 +1070,7 @@ function playAiMoveFromStockfish(ai_turn_payload){
     }
 
     is_ai_thinking_g = true
+    setAiThinkingVisible(true)
 
     try {
         const fen = boardToFen(ai_turn_payload.board, ai_turn_payload.current_turn)
@@ -849,20 +1081,24 @@ function playAiMoveFromStockfish(ai_turn_payload){
             if (!uci_move || (uci_move === '(none)')){
                 socket.emit('aiMoveFailed')
                 is_ai_thinking_g = false
+                setAiThinkingVisible(false)
                 return
             }
 
             const { from_cell, to_cell, promotion_type } = uciMoveToCellsAndPromotion(uci_move)
             socket.emit('aiMoveMade', [from_cell, to_cell, promotion_type])
             is_ai_thinking_g = false
+            setAiThinkingVisible(false)
         }).catch((error) => {
             console.log('Stockfish AI error:', error)
             socket.emit('aiMoveFailed')
             is_ai_thinking_g = false
+            setAiThinkingVisible(false)
         })
     } catch (error) {
         console.log('Stockfish AI setup error:', error)
         is_ai_thinking_g = false
+        setAiThinkingVisible(false)
     }
 }
 
@@ -935,7 +1171,7 @@ function askForPromotionType(player_color){
     promotion_type_rook_btn.classList.add(`background-${player_color}-rook`)
     promotion_type_queen_btn.classList.add(`background-${player_color}-queen`)
 
-    const title = "Choose a piece to promote pawn to:"
+    const title = "Promote pawn"
     openBoardAlertPopup(title, "", 'promotion')
 }
 
@@ -949,16 +1185,68 @@ function getPieceElement(piece){
     return document.getElementById(piece.id)
 }
 
-function removeCapturedPieceFromBoard(captured_piece, player_color){
-    const captured_piece_elem = getPieceElement(captured_piece)
+function getCapturedPiecesContainer(captured_piece, player_color){
+    if (captured_piece.color === player_color){
+        return opponent_captured_pieces
+    }
+    return player_captured_pieces
+}
+
+function getCapturedPieceLandingRect(destination_container, captured_piece_elem){
+    const probe = captured_piece_elem.cloneNode(false)
+    probe.className = 'captured-piece'
+    probe.style.visibility = 'hidden'
+    probe.removeAttribute('id')
+    destination_container.appendChild(probe)
+    const landing_rect = probe.getBoundingClientRect()
+    probe.remove()
+    return landing_rect
+}
+
+function animatePieceTowardCaptureTray(captured_piece_elem, landing_rect){
+    const board_rect = board_element.getBoundingClientRect()
+    if (!(board_rect.width > 0 && board_rect.height > 0 && landing_rect.width > 0)){
+        return
+    }
+    const left_pct = ((landing_rect.left - board_rect.left) / board_rect.width) * 100
+    const top_pct = ((landing_rect.top - board_rect.top) / board_rect.height) * 100
+    captured_piece_elem.style.left = `${left_pct}%`
+    captured_piece_elem.style.top = `${top_pct}%`
+    captured_piece_elem.style.height = `${landing_rect.height}px`
+    captured_piece_elem.style.zIndex = '5'
+}
+
+function settleCapturedPieceInTray(captured_piece_elem, destination_container){
     captured_piece_elem.classList.add('captured-piece')
     captured_piece_elem.classList.remove('piece')
+    captured_piece_elem.style.left = ''
+    captured_piece_elem.style.top = ''
+    captured_piece_elem.style.height = ''
+    captured_piece_elem.style.zIndex = ''
+    destination_container.appendChild(captured_piece_elem)
+}
 
-    if (captured_piece.color === player_color){
-        opponent_captured_pieces.appendChild(captured_piece_elem)
-    } else {
-        player_captured_pieces.appendChild(captured_piece_elem)
+function removeCapturedPieceFromBoard(captured_piece, player_color){
+    const captured_piece_elem = getPieceElement(captured_piece)
+    if (!captured_piece_elem){
+        return
     }
+
+    const destination_container = getCapturedPiecesContainer(captured_piece, player_color)
+    const landing_rect = getCapturedPieceLandingRect(destination_container, captured_piece_elem)
+    animatePieceTowardCaptureTray(captured_piece_elem, landing_rect)
+
+    let settled = false
+    const finishCaptureAnimation = () => {
+        if (settled){
+            return
+        }
+        settled = true
+        settleCapturedPieceInTray(captured_piece_elem, destination_container)
+    }
+
+    captured_piece_elem.addEventListener('transitionend', finishCaptureAnimation, { once: true })
+    setTimeout(finishCaptureAnimation, 280)
 }
 
 const piece_names = {
@@ -1001,9 +1289,11 @@ function getMoveInNotation(new_play){
 }
 
 function createNewMoveTableItem(move_table_item_text){
+    clearMoveTableEmptyMessage()
+
     let new_move_table_item_text = ''
     new_move_table_item_text += String(move_counter_g)
-    new_move_table_item_text += '.    '
+    new_move_table_item_text += '.  '
     new_move_table_item_text += move_table_item_text
     move_counter_g += 1
 
@@ -1011,8 +1301,7 @@ function createNewMoveTableItem(move_table_item_text){
     new_move_table_item.classList.add('move-table-item')
     new_move_table_item.textContent = new_move_table_item_text
     move_table_content.appendChild(new_move_table_item)
-
-    // new_move_table_item.scrollIntoView(false)
+    scrollMoveTableToBottom()
 }
 
 function appendTextToLastNewMoveTableItem(move_table_item_text){
@@ -1022,8 +1311,7 @@ function appendTextToLastNewMoveTableItem(move_table_item_text){
     let last_move_table_item_text = last_move_table_item.textContent
     last_move_table_item_text += move_table_item_text
     last_move_table_item.textContent = last_move_table_item_text
-
-    // last_move_table_item.scrollIntoView(false)
+    scrollMoveTableToBottom()
 }
 
 function updateLastMoves(new_play){
@@ -1060,6 +1348,8 @@ socket.on('movePiece', ([new_play, player_color]) => {
     if (new_play.promotion && (moved_piece.color === player_color)){
         highlightPromotionCell(target_cell, player_color)
         askForPromotionType(player_color)
+    } else {
+        setCurrentTurnToOppositeColor(moved_piece.color)
     }
 })
 
@@ -1081,4 +1371,6 @@ socket.on('promotePawn', ([unpromoted_pawn, promoted_pawn]) => {
 
     const pawnPromotionTypeNotation = piece_names[promoted_pawn.type]
     appendTextToLastNewMoveTableItem(pawnPromotionTypeNotation)
+
+    setCurrentTurnToOppositeColor(promoted_pawn.color)
 })
