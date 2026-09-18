@@ -681,11 +681,7 @@ new_game_options.addEventListener('click', (event) => {
     }
 })
 
-socket.on('newGameCreated', (payload) => {
-    const board = Array.isArray(payload) ? payload[0] : payload.board
-    const player_color = Array.isArray(payload) ? payload[1] : payload.player_color
-    const join_code = Array.isArray(payload) ? payload[2] : payload.join_code
-
+socket.on('newGameCreated', ({ board, player_color, join_code }) => {
     clearGameData()
     clearRandomSearchState()
     clearJoinWaitState()
@@ -696,15 +692,11 @@ socket.on('newGameCreated', (payload) => {
     hideElements([player_turn_indicator, opponent_turn_indicator])
     updateSidebarForActiveGame()
 
-    const share_url = join_code
-        ? `${window.location.origin}${window.location.pathname}?join=${join_code}`
-        : null
+    const share_url = `${window.location.origin}${window.location.pathname}?join=${join_code}`
     pending_share_url_g = share_url
     const title = "Game ready"
-    const text = join_code
-        ? `Share join code ${join_code} with a friend, or copy the invite link below. They can also join with your username.`
-        : "Ask a friend to join with your username, or share a join code once available."
-    openBoardAlertPopup(title, text, join_code ? 'share' : null)
+    const text = `Share join code ${join_code} with a friend, or copy the invite link below. They can also join with your username.`
+    openBoardAlertPopup(title, text, 'share')
     hideAllToggleElements()
 })
 
