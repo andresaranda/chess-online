@@ -64,6 +64,8 @@ const game_actions = getElement('#game-actions')
 const quick_game_btn = getElement('#quick-game-btn')
 const quick_game_options = getElement('#quick-game-options')
 const quick_game_input = getElement('#quick-game-input')
+const quick_game_input_wrap = getElement('#quick-game-input-wrap')
+const quick_game_input_clear_btn = getElement('#quick-game-input-clear-btn')
 const quick_game_input_alert = getElement('#quick-game-input-alert')
 const quick_game_input_btn = getElement('#quick-game-input-btn')
 const quick_game_random_btn = getElement('#quick-game-random-btn')
@@ -75,6 +77,8 @@ const new_game_options = getElement('#new-game-options')
 const join_game_btn = getElement('#join-game-btn')
 const join_game_options = getElement('#join-game-options')
 const join_game_input = getElement('#join-game-input')
+const join_game_input_wrap = getElement('#join-game-input-wrap')
+const join_game_input_clear_btn = getElement('#join-game-input-clear-btn')
 const join_game_input_alert = getElement('#join-game-input-alert')
 const join_game_input_btn = getElement('#join-game-input-btn')
 const join_game_cancel_btn = getElement('#join-game-cancel-btn')
@@ -508,35 +512,16 @@ function clearGameData(){
 
 //? PLAYER CREATION AND DELETION, AND GAME CREATION AND JOINING:
 
-function updateInputWithClearButtonState(input_element, action_btn){
-    const has_value = (input_element.value.trim().length > 0)
-    action_btn.disabled = !has_value
-    input_element.closest('.input-with-clear')?.classList.toggle('has-value', has_value)
-}
-
 function updateQuickGameInputButtonState(){
-    updateInputWithClearButtonState(quick_game_input, quick_game_input_btn)
+    const has_value = (quick_game_input.value.trim().length > 0)
+    quick_game_input_btn.disabled = !has_value
+    quick_game_input_wrap.classList.toggle('has-value', has_value)
 }
 
 function updateJoinInputButtonState(){
-    updateInputWithClearButtonState(join_game_input, join_game_input_btn)
-}
-
-function clearTextInput(input_element){
-    input_element.value = ''
-    input_element.dispatchEvent(new Event('input', { bubbles: true }))
-    input_element.focus()
-}
-
-function bindInputClearButtons(){
-    document.querySelectorAll('.input-clear-btn').forEach((clear_btn) => {
-        clear_btn.addEventListener('click', () => {
-            const input_element = getElement(`#${clear_btn.dataset.clearInput}`)
-            if (input_element){
-                clearTextInput(input_element)
-            }
-        })
-    })
+    const has_value = (join_game_input.value.trim().length > 0)
+    join_game_input_btn.disabled = !has_value
+    join_game_input_wrap.classList.toggle('has-value', has_value)
 }
 
 function applyPendingJoinTargetFromUrl(){
@@ -612,11 +597,25 @@ function startJoinWait(opponents_username){
     socket.emit('joinGame', opponents_username)
 }
 
-quick_game_input.addEventListener('input', updateQuickGameInputButtonState)
-join_game_input.addEventListener('input', updateJoinInputButtonState)
-bindInputClearButtons()
-updateQuickGameInputButtonState()
-updateJoinInputButtonState()
+quick_game_input.addEventListener('input', () => {
+    updateQuickGameInputButtonState
+})
+
+join_game_input.addEventListener('input', () => {
+    updateJoinInputButtonState
+})
+
+quick_game_input_clear_btn.addEventListener('click', () => {
+    quick_game_input.value = ''
+    updateQuickGameInputButtonState()
+    quick_game_input.focus()
+})
+
+join_game_input_clear_btn.addEventListener('click', () => {
+    join_game_input.value = ''
+    updateJoinInputButtonState()
+    join_game_input.focus()
+})
 
 quick_game_input_btn.addEventListener('click', () => {
     const proposed_username = quick_game_input.value
