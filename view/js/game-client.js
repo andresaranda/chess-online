@@ -598,11 +598,11 @@ function startJoinWait(opponents_username){
 }
 
 quick_game_input.addEventListener('input', () => {
-    updateQuickGameInputButtonState
+    updateQuickGameInputButtonState()
 })
 
 join_game_input.addEventListener('input', () => {
-    updateJoinInputButtonState
+    updateJoinInputButtonState()
 })
 
 quick_game_input_clear_btn.addEventListener('click', () => {
