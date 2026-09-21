@@ -7,9 +7,13 @@ const players_db = require('./utils/players')
 const games_db = require('./utils/games');
 const game_engine = require('./game-server/game-engine')
 
+const PORT = process.env.PORT || 3000;
+
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
+const io = socketio(server, {
+    transports: ['websocket']
+});
 
 app.use(express.static(path.join(__dirname,'/view')));
 
@@ -702,4 +706,4 @@ io.on('connection', socket => {
 
 });
 
-server.listen(3000, () => console.log('Server running on port 3000'));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

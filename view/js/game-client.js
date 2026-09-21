@@ -1,7 +1,9 @@
 // modulate and comment front-end
 // comment back-end
 
-const socket = io();
+const socket = io({
+    transports: ['websocket']
+});
 
 let requesting_opponent_g = null
 let player_color_g = null
